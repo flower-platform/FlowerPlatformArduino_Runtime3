@@ -16,6 +16,9 @@ protected:
 	int lastValue;
 
 public:
+	// TODO CS: TEMP
+	bool contributesToState;
+
 	uint8_t pin;
 	uint8_t initialValue = LOW;
 
@@ -23,6 +26,9 @@ public:
 
 	bool isPwm = false;
 
+	void loop() {
+	}
+	
 	void setup() {
 	    pinMode(pin, OUTPUT);
 		digitalWrite(pin, initialValue);

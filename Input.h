@@ -17,6 +17,8 @@ protected:
 	unsigned long lastTime;
 
 public:
+	// TODO CS: TEMP
+	bool contributesToState;
 
 	void (*onValueChanged)(ValueChangedEvent*) = NULL;
 
