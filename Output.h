@@ -5,11 +5,7 @@
 #ifndef Output_h
 #define Output_h
 
-#include <Arduino.h>
 #include <FlowerPlatformArduinoRuntime.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
 
 class Output {
 protected:
@@ -65,6 +61,10 @@ public:
 		}
 
 		lastValue = value;
+	}
+
+	int getValue() {
+		return lastValue;
 	}
 
 	void toggleHighLow() {
