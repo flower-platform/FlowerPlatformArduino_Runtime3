@@ -5,6 +5,7 @@
 #ifndef FlowerPlatformArduinoRuntime_h
 #define FlowerPlatformArduinoRuntime_h
 
+#include <Arduino.h>
 #include <Print.h>
 
 #ifdef ESP8266
@@ -88,19 +89,6 @@ public:
     	} while (n > 0);
     	return size;
     }
-
-//    size_t write(const uint8_t *buffer, size_t size) {
-//    	if (bufIndex + size > BUFFERED_PRINT_BUFFER_SIZE) {
-//    		flush();
-//    	}
-//    	if (size > BUFFERED_PRINT_BUFFER_SIZE) {
-//    		out->write(buffer, size);
-//    	} else {
-//    		memcpy(buf + bufIndex, buffer, size);
-//    		bufIndex += size;
-//    	}
-//    	return size;
-//    }
 
     void flush() {
     	if (bufIndex == 0) {
