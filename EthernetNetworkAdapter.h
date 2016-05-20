@@ -9,8 +9,8 @@
 #include <Ethernet.h>
 #include <EthernetClient.h>
 #include <EthernetServer.h>
-#include <IPAddress.h>
-#include <stdint.h>
+#include <INetworkAdapter.h>
+#include <IProtocolHandler.h>
 
 class EthernetNetworkAdapter : public INetworkAdapter {
 protected:

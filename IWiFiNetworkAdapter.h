@@ -7,7 +7,7 @@
 
 #include <INetworkAdapter.h>
 
-class IWiFiNetworkAdapter : INetworkAdapter {
+class IWiFiNetworkAdapter : public INetworkAdapter {
 public:
 
 	char* ssid;

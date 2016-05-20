@@ -12,13 +12,14 @@ public:
 
 	int port;
 
-	virtual void processClientRequest(Client* client);
+	virtual void processClientRequest(Client* client) = 0;
 
-	virtual void setup() { }
+	virtual void setup() { };
 
-	virtual void loop() { }
+	virtual void loop() { };
 
-	virtual ~IProtocolHandler() { }
+	virtual ~IProtocolHandler() { };
+
 };
 
 #endif
