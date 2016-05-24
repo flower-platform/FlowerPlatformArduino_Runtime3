@@ -46,64 +46,83 @@ size_t write_P(Print* p, const char* s) {
 }
 
 #define BUFFERED_PRINT_BUFFER_SIZE 256
+
 class BufferedPrint : public Print {
+private:
+
+	Print* out;
+
+    uint8_t buf[BUFFERED_PRINT_BUFFER_SIZE];
+
+    size_t bufIndex;
+
 public:
 
-	BufferedPrint(Print* print) {
-		this->out = print;
-		this->bufIndex = 0;
-	}
+	BufferedPrint(Print* print);
 
-	size_t write(uint8_t b) {
-		return write(&b, 1, false);
-	}
+	size_t write(uint8_t b);
 
-	size_t write(const uint8_t* buffer, size_t size) {
-		return write(buffer, size, false);
-	}
+	size_t write(const uint8_t* buffer, size_t size);
 
-	size_t write_P(const char* s) {
-		return write((uint8_t*) s, strlen_P(s), true);
-    }
+	size_t write_P(const char* s);
 
-	size_t write_P(const uint8_t* buffer, size_t size) {
-		return write(buffer, size, true);
-    }
+	size_t write_P(const uint8_t* buffer, size_t size);
 
-    size_t write(const uint8_t* buffer, size_t size, bool isProgMem) {
-    	size_t n = size;
-    	size_t writableBytes;
-    	do {
-    		writableBytes = bufIndex + n > BUFFERED_PRINT_BUFFER_SIZE ? BUFFERED_PRINT_BUFFER_SIZE - bufIndex : n;
-    		if (isProgMem) {
-        		memcpy_P(buf + bufIndex, buffer, writableBytes);
-    		} else {
-        		memcpy(buf + bufIndex, buffer, writableBytes);
-    		}
-    		bufIndex += writableBytes;
-    		buffer += writableBytes;
-    		n -= writableBytes;
-    		if (bufIndex == BUFFERED_PRINT_BUFFER_SIZE) {
-    			flush();
-    		}
-    	} while (n > 0);
-    	return size;
-    }
+    size_t write(const uint8_t* buffer, size_t size, bool isProgMem);
 
-    void flush() {
-    	if (bufIndex == 0) {
-    		return;
-    	}
-    	out->write(buf, bufIndex);
-    	bufIndex = 0;
-    }
+    void flush();
 
     virtual ~BufferedPrint() { }
 
-private:
-    Print* out;
-    uint8_t buf[BUFFERED_PRINT_BUFFER_SIZE];
-    size_t bufIndex;
 };
+
+BufferedPrint::BufferedPrint(Print* print) {
+	this->out = print;
+	this->bufIndex = 0;
+}
+
+size_t BufferedPrint::write(uint8_t b) {
+	return write(&b, 1, false);
+}
+
+size_t BufferedPrint::write(const uint8_t* buffer, size_t size) {
+	return write(buffer, size, false);
+}
+
+size_t BufferedPrint::write_P(const char* s) {
+	return write((uint8_t*) s, strlen_P(s), true);
+}
+
+size_t BufferedPrint::write_P(const uint8_t* buffer, size_t size) {
+	return write(buffer, size, true);
+}
+
+size_t BufferedPrint::write(const uint8_t* buffer, size_t size, bool isProgMem) {
+	size_t n = size;
+	size_t writableBytes;
+	do {
+		writableBytes = bufIndex + n > BUFFERED_PRINT_BUFFER_SIZE ? BUFFERED_PRINT_BUFFER_SIZE - bufIndex : n;
+		if (isProgMem) {
+    		memcpy_P(buf + bufIndex, buffer, writableBytes);
+		} else {
+    		memcpy(buf + bufIndex, buffer, writableBytes);
+		}
+		bufIndex += writableBytes;
+		buffer += writableBytes;
+		n -= writableBytes;
+		if (bufIndex == BUFFERED_PRINT_BUFFER_SIZE) {
+			flush();
+		}
+	} while (n > 0);
+	return size;
+}
+
+void BufferedPrint::flush() {
+	if (bufIndex == 0) {
+		return;
+	}
+	out->write(buf, bufIndex);
+	bufIndex = 0;
+}
 
 #endif

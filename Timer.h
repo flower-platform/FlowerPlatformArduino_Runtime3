@@ -10,16 +10,20 @@ class Timer;
 
 class TimerEvent {
 public:
+
 	Timer* timer;
 
 };
 
 class Timer {
 protected:
+
 	unsigned long lastTimestamp;
 
 public:
+
 	void (*onTimer)(TimerEvent*) = NULL;
+
 	void (*onTimerComplete)(TimerEvent*) = NULL;
 
 	unsigned int currentCount;
@@ -30,50 +34,59 @@ public:
 
 	bool autoStart;
 
-	void setup() {
-	}
+	void setup();
 
-	void loop() {
-		if (!autoStart) {
-			return;
-		}
-		if (repeatCount > 0 && currentCount > repeatCount) {
-			autoStart = false;
-			return;
-		}
-		if (millis() > lastTimestamp + delay) {
-			currentCount++;
+	void loop();
 
-			TimerEvent event;
-			if (onTimer != NULL) {
-				onTimer(&event);
-			}
+	void reset();
 
-			if (repeatCount > 0 && currentCount == repeatCount) {
-				if (onTimerComplete != NULL) {
-					onTimerComplete(&event);
-				}
-				autoStart = false;
-			}
-			lastTimestamp = millis();
-		}
+	void start();
 
-	}
-
-	void reset() {
-		autoStart = false;
-		currentCount = 0;
-	}
-
-	void start() {
-		lastTimestamp = millis();
-		autoStart = true;
-	}
-
-	void stop() {
-		autoStart = false;
-	}
+	void stop();
 
 };
+
+void Timer::setup() { }
+
+void Timer::loop() {
+	if (!autoStart) {
+		return;
+	}
+	if (repeatCount > 0 && currentCount > repeatCount) {
+		autoStart = false;
+		return;
+	}
+	if (millis() > lastTimestamp + delay) {
+		currentCount++;
+
+		TimerEvent event;
+		if (onTimer != NULL) {
+			onTimer(&event);
+		}
+
+		if (repeatCount > 0 && currentCount == repeatCount) {
+			if (onTimerComplete != NULL) {
+				onTimerComplete(&event);
+			}
+			autoStart = false;
+		}
+		lastTimestamp = millis();
+	}
+
+}
+
+void Timer::reset() {
+	autoStart = false;
+	currentCount = 0;
+}
+
+void Timer::start() {
+	lastTimestamp = millis();
+	autoStart = true;
+}
+
+void Timer::stop() {
+	autoStart = false;
+}
 
 #endif

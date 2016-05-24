@@ -9,6 +9,7 @@
 
 class Output {
 protected:
+
 	int lastValue;
 
 public:
@@ -22,59 +23,75 @@ public:
 
 	bool isPwm = false;
 
-	void loop() {
-	}
-	
-	void setup() {
-	    pinMode(pin, OUTPUT);
-		digitalWrite(pin, initialValue);
-	    lastValue = initialValue;
-	}
+	void loop();
 
-	void printStateAsJson(const __FlashStringHelper* instanceName, Print* print) {
-		print->print(F("\""));
-		print->print(instanceName);
-		print->print(F("\": "));
-		print->print(lastValue);
-	}
+	void setup();
 
-	void setHigh() {
-		setValue(HIGH);
-	}
+	void printStateAsJson(const __FlashStringHelper* instanceName, Print* print);
 
-	void setLow() {
-		setValue(LOW);
-	}
+	void setHigh();
 
-	void setValue(int value) {
-		if (isPwm) {
-			analogWrite(pin, value);
-		} else {
-			digitalWrite(pin, value);
-		}
+	void setLow();
 
-		if (onValueChanged != NULL) {
-			ValueChangedEvent event;
-			event.previousValue = lastValue;
-			event.currentValue = value;
-			onValueChanged(&event);
-		}
+	void setValue(int value);
 
-		lastValue = value;
-	}
+	int getValue();
 
-	int getValue() {
-		return lastValue;
-	}
-
-	void toggleHighLow() {
-		if (lastValue) {
-			setValue(LOW);
-		} else {
-			setValue(HIGH);
-		}
-	}
+	void toggleHighLow();
 
 };
+
+void Output::loop() {
+}
+
+void Output::setup() {
+    pinMode(pin, OUTPUT);
+	digitalWrite(pin, initialValue);
+    lastValue = initialValue;
+}
+
+void Output::printStateAsJson(const __FlashStringHelper* instanceName, Print* print) {
+	print->print(F("\""));
+	print->print(instanceName);
+	print->print(F("\": "));
+	print->print(lastValue);
+}
+
+void Output::setHigh() {
+	setValue(HIGH);
+}
+
+void Output::setLow() {
+	setValue(LOW);
+}
+
+void Output::setValue(int value) {
+	if (isPwm) {
+		analogWrite(pin, value);
+	} else {
+		digitalWrite(pin, value);
+	}
+
+	if (onValueChanged != NULL) {
+		ValueChangedEvent event;
+		event.previousValue = lastValue;
+		event.currentValue = value;
+		onValueChanged(&event);
+	}
+
+	lastValue = value;
+}
+
+int Output::getValue() {
+	return lastValue;
+}
+
+void Output::toggleHighLow() {
+	if (lastValue) {
+		setValue(LOW);
+	} else {
+		setValue(HIGH);
+	}
+}
 
 #endif
