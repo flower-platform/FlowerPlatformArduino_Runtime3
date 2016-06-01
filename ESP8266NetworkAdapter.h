@@ -32,6 +32,9 @@
 #define READ_BUFFER_SIZE 64
 #define WRITE_TIMEOUT 1500
 
+/*
+ * @fp.ignore
+ */
 class CharSequenceParser {
 public:
 	CharSequenceParser(const char* sequence) {
@@ -68,6 +71,9 @@ protected:
 
 class ESP8266NetworkAdapter;
 
+/*
+ * @fp.ignore
+ */
 class ESP8266Client : public Client {
 public:
 

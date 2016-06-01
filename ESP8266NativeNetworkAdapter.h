@@ -14,7 +14,6 @@
 #include <WiFiClient.h>
 #include <WiFiServer.h>
 
-
 class ESP8266NativeNetworkAdapter : public IWiFiNetworkAdapter {
 protected:
 
