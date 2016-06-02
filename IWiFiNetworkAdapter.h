@@ -10,7 +10,7 @@
 class IWiFiNetworkAdapter : public INetworkAdapter {
 public:
 
-	char* ssid;
+	const char* ssid;
 
 	const char* password;
 

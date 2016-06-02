@@ -5,7 +5,7 @@
 #ifndef INetworkAdapter_h
 #define INetworkAdapter_h
 
-#include <IProtocolHandler.h>;
+#include <IProtocolHandler.h>
 
 class INetworkAdapter {
 public:

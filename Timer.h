@@ -22,9 +22,9 @@ protected:
 
 public:
 
-	void (*onTimer)(TimerEvent*) = NULL;
+	Callback<TimerEvent>* onTimer = NULL;
 
-	void (*onTimerComplete)(TimerEvent*) = NULL;
+	Callback<TimerEvent>* onTimerComplete = NULL;
 
 	unsigned int currentCount;
 

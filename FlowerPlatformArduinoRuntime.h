@@ -16,9 +16,38 @@ extern "C" {
 
 #define DEBUG_FP 0
 
-class Event { };
+template <class E> class Callback {
+public:
 
-class ValueChangedEvent : public Event {
+	virtual void operator()(E* event) const = 0;
+
+	virtual ~Callback() { }
+
+};
+
+template <class T, class E> class DelegatingCallback : public Callback<E> {
+protected:
+
+	T* instance;
+
+	void (T::*functionPointer)(E* event);
+
+public:
+
+	DelegatingCallback(T* _instance, void (T::*_functionPointer)(E* event)) {
+		instance = _instance;
+		functionPointer = _functionPointer;
+	}
+
+	void operator()(E* event) const {
+		(*instance.*functionPointer)(event);
+	}
+
+	virtual ~DelegatingCallback() { }
+
+};
+
+class ValueChangedEvent {
 public:
 
 	int previousValue;

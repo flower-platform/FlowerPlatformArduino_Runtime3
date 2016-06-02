@@ -22,11 +22,11 @@ public:
 	// TODO CS: TEMP
 	bool contributesToState;
 
-	void (*onValueChanged)(ValueChangedEvent*) = NULL;
+	Callback<ValueChangedEvent>* onValueChanged = NULL;
 
 	uint8_t pin;
 
-	int pollInterval = 50;
+	unsigned int pollInterval = 50;
 
 	bool internalPullUp = false;
 
@@ -60,7 +60,7 @@ void Input::loop() {
 	if (value == lastValue) {
     	return;
     }
-	if (!isAnalog && millis() - lastTime < pollInterval) {
+	if (!isAnalog && (millis() - lastTime < pollInterval)) {
 		return;
 	}
 
@@ -68,7 +68,7 @@ void Input::loop() {
 		ValueChangedEvent event;
 		event.previousValue = lastValue;
 		event.currentValue = value;
-		onValueChanged(&event);
+		(*onValueChanged)(&event);
 	}
 
 	lastValue = value;

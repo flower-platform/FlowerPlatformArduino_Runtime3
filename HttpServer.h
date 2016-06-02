@@ -24,7 +24,7 @@
 
 class HttpServer;
 
-class HttpCommandEvent : public Event {
+class HttpCommandEvent {
 public:
 
 	const char* url;

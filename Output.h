@@ -19,7 +19,7 @@ public:
 	uint8_t pin;
 	uint8_t initialValue = LOW;
 
-	void (*onValueChanged)(ValueChangedEvent*) = NULL;
+	Callback<ValueChangedEvent>* onValueChanged = NULL;
 
 	bool isPwm = false;
 
@@ -76,7 +76,7 @@ void Output::setValue(int value) {
 		ValueChangedEvent event;
 		event.previousValue = lastValue;
 		event.currentValue = value;
-		onValueChanged(&event);
+		(*onValueChanged)(&event);
 	}
 
 	lastValue = value;
