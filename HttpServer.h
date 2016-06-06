@@ -46,7 +46,7 @@ public:
 
 	static const int CONTENT_TYPE_HTML = 1;
 
-	void (*onCommandReceived)(HttpCommandEvent*) = NULL;
+	Callback<HttpCommandEvent>* onCommandReceived = NULL;
 
 	void processClientRequest(Client* client);
 
