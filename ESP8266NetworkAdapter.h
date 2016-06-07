@@ -5,11 +5,11 @@
 #ifndef ESP8266NetworkAdapter_h
 #define ESP8266NetworkAdapter_h
 
-#include <FlowerPlatformArduinoRuntime.h>
 #include <Arduino.h>
 #include <Client.h>
 #include <HardwareSerial.h>
 #include <IPAddress.h>
+
 
 
 //#define DEBUG_ESP8266NetworkAdapter
@@ -297,6 +297,8 @@ CharSequenceParser ESP8266NetworkAdapter::ipdParser("+IPD,");
 
 
 void ESP8266NetworkAdapter::setup() {
+	INetworkAdapter::setup();
+
 	for (uint8_t i = 0; i < MAX_CLIENTS; i++) {
 		clients[i].clientId = i;
 		clients[i].networkAdapter = this;

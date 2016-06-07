@@ -5,11 +5,10 @@
 #ifndef WiFiNetworkAdapter_h
 #define WiFiNetworkAdapter_h
 
-#include <IProtocolHandler.h>
-#include <IWiFiNetworkAdapter.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WiFiServer.h>
+
 
 
 class WiFiNetworkAdapter : public IWiFiNetworkAdapter {
@@ -26,6 +25,8 @@ public:
 };
 
 void WiFiNetworkAdapter::setup() {
+	INetworkAdapter::setup();
+
 	// Disable SPI for SD card.
 	// This workaround is needed for Ethernet shield clones. The original Ethernet shield should work properly without this, but the clones don't.
 	pinMode(4, OUTPUT);

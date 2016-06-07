@@ -28,6 +28,8 @@ public:
 };
 
 void ESP8266NativeNetworkAdapter::setup() {
+	INetworkAdapter::setup();
+
 	this->server = new WiFiServer(protocolHandler->port);
 	WiFi.begin(ssid, password);
 	IPAddress ip = IPAddress(ipAddress);

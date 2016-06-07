@@ -24,6 +24,8 @@ public:
 };
 
 void WiFi101NetworkAdapter::setup() {
+	INetworkAdapter::setup();
+
 	this->server = new WiFiServer(protocolHandler->port);
 	WiFi.config(ipAddress);
 	WiFi.begin(ssid, password);

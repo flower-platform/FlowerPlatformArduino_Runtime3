@@ -5,12 +5,10 @@
 #ifndef HttpServer_h
 #define HttpServer_h
 
-#include <avr/pgmspace.h>
-#include <Client.h>
 #include <FlowerPlatformArduinoRuntime.h>
+#include <Client.h>
 #include <IProtocolHandler.h>
-#include <stdint.h>
-#include <string.h>
+
 
 #ifdef DEBUG_HttpServer
 #define DB_P_HttpServer(text) Serial.print(text)
@@ -58,7 +56,13 @@ public:
 
 	void getCommandFromUrl(const char* url, char* command);
 
-	void getParameterValueFromUrl(const char* url, const char* param, char* value);
+	void getStringParameterValue(const char* url, const char* param, char* value);
+
+	int getIntParameterValue(const char* url, const char* param);
+
+	void setup() { };
+
+	void loop() { };
 
 };
 
@@ -123,7 +127,7 @@ void HttpServer::dispatchEvent(const char* requestMethod, const char* requestUrl
 	event.url = requestUrl;
 	event.server = this;
 	event.client = client;
-	onCommandReceived(&event);
+	(*onCommandReceived)(&event);
 
 }
 
@@ -148,7 +152,7 @@ void HttpServer::getCommandFromUrl(const char* url, char* command) {
 	}
 }
 
-void HttpServer::getParameterValueFromUrl(const char* url, const char* param, char* value) {
+void HttpServer::getStringParameterValue(const char* url, const char* param, char* value) {
 	char* st = strstr(url, param); // look for param string start in url
 	if (st != NULL) {
 		st = strchr(st, '=') + 1; // look for value start
@@ -163,6 +167,12 @@ void HttpServer::getParameterValueFromUrl(const char* url, const char* param, ch
 	} else {
 		value[0]='\0';
 	}
+}
+
+int HttpServer::getIntParameterValue(const char* url, const char* param) {
+	char valStr[8];
+	getStringParameterValue(url, param, valStr);
+	return atoi(valStr);
 }
 
 #endif
