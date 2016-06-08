@@ -5,8 +5,8 @@
 #ifndef HttpServer_h
 #define HttpServer_h
 
-#include <FlowerPlatformArduinoRuntime.h>
 #include <Client.h>
+#include <FlowerPlatformArduinoRuntime.h>
 #include <IProtocolHandler.h>
 
 
@@ -153,19 +153,28 @@ void HttpServer::getCommandFromUrl(const char* url, char* command) {
 }
 
 void HttpServer::getStringParameterValue(const char* url, const char* param, char* value) {
-	char* st = strstr(url, param); // look for param string start in url
-	if (st != NULL) {
-		st = strchr(st, '=') + 1; // look for value start
-		char* en = strchr(st, '&'); // look for end of value string
-		if (en == NULL) {
-			strcpy(value, st);
-		} else {
-			uint8_t n = en - st;
-			strncpy(value, st, n);
-			value[n] = '\0';
-		}
+	int paramLength = strlen(param);
+	int urlLength = strlen(url);
+
+	// look for param string start in url
+	const char* st = strchr(url, '?');
+	while (st != NULL && ( !(*(st - 1) == '?' || *(st - 1) == '&') || st + paramLength > url + urlLength || *(st + paramLength) != '=')) {
+		st = strstr(st + 1, param);
+	}
+	if (st == NULL) {
+		value[0] = '\0';
+		return;
+	}
+
+	// get value
+	st += paramLength + 1; // value start
+	char* en = strchr(st, '&'); // look for end of value string
+	if (en == NULL) {
+		strcpy(value, st);
 	} else {
-		value[0]='\0';
+		uint8_t n = en - st;
+		strncpy(value, st, n);
+		value[n] = '\0';
 	}
 }
 

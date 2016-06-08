@@ -74,7 +74,7 @@ size_t write_P(Print* p, const char* s) {
 	return n;
 }
 
-#define BUFFERED_PRINT_BUFFER_SIZE 256
+#define BUFFERED_PRINT_BUFFER_SIZE 64
 
 class BufferedPrint : public Print {
 private:
