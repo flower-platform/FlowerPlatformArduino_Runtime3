@@ -50,7 +50,7 @@ public:
 
 	void dispatchEvent(const char* requestMethod, const char* requestUrl, Client* client);
 
-	void httpSuccess(Print* print, int contentType = CONTENT_TYPE_JSON);
+	void httpSuccess(Print* print, int contentType = CONTENT_TYPE_JSON, bool bzip = false);
 
 	void httpError404(Print* print);
 
@@ -131,9 +131,12 @@ void HttpServer::dispatchEvent(const char* requestMethod, const char* requestUrl
 
 }
 
-void HttpServer::httpSuccess(Print* print, int contentType) {
+void HttpServer::httpSuccess(Print* print, int contentType, bool gzip) {
 	write_P(print, PSTR("HTTP/1.1 200 OK\r\nContent-Type: "));
 	write_P(print, contentType == CONTENT_TYPE_HTML ? PSTR("text/html") : PSTR("application/json"));
+	if (gzip) {
+		write_P(print, PSTR("\r\nContent-Encoding: gzip"));
+	}
 	write_P(print, PSTR("\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n"));  // the connection will be closed after completion of the response
 }
 
