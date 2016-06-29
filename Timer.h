@@ -61,12 +61,12 @@ void Timer::loop() {
 
 		TimerEvent event;
 		if (onTimer != NULL) {
-			onTimer(&event);
+			(*onTimer)(&event);
 		}
 
 		if (repeatCount > 0 && currentCount == repeatCount) {
 			if (onTimerComplete != NULL) {
-				onTimerComplete(&event);
+				(*onTimerComplete)(&event);
 			}
 			autoStart = false;
 		}
