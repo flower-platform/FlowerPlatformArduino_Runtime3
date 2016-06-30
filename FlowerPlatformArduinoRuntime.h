@@ -59,10 +59,16 @@ public:
 int freeRam() {
 #ifdef ESP8266
 	return system_get_free_heap_size();
-#else
+#elif SAMD21_SERIES
+	extern int __HeapLimit;
+	int v;
+	return (int) &v - (int) &__HeapLimit;
+#elif __AVR_ARCH__
 	extern int __heap_start, *__brkval;
 	int v;
 	return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+#else
+	return -1;
 #endif
 }
 
