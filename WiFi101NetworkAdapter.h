@@ -36,7 +36,7 @@ void WiFi101NetworkAdapter::loop() {
 	// listen for incoming clients
 	WiFiClient client = server->available();
 	if (client) {
-		server->begin();
+		Serial.println("client available");
 		protocolHandler->processClientRequest(&client);
 	}
 }

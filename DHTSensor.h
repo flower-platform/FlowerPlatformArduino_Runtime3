@@ -6,9 +6,8 @@
 #define DHTSensor_h
 
 #include <Arduino.h>
-#include <dht.h>
+#include <DHT.h>
 #include <Print.h>
-
 
 
 class DHTSensor {
@@ -38,7 +37,7 @@ public:
 
 		lastTime = millis();
 
-		DHT dhtSensor(6, DHT11);
+		DHT dhtSensor(pin, DHT11);
 
 		double temperature = dhtSensor.readTemperature();
 		if (temperature != lastTemperature && onTemperatureChanged != NULL) {
