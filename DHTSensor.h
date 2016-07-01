@@ -8,10 +8,13 @@
 #include <Arduino.h>
 #include <DHT.h>
 #include <Print.h>
-
+#include <FlowerPlatformArduinoRuntime.h>
 
 class DHTSensor {
 public:
+
+	// TODO CS: TEMP
+	bool contributesToState;
 
 	Callback<ValueChangedEvent>* onTemperatureChanged = NULL;
 	Callback<ValueChangedEvent>* onHumidityChanged = NULL;
@@ -62,7 +65,7 @@ public:
 
 		print->print(F("\""));
 		print->print(instanceName);
-		print->print(F("_temperature"));
+		print->print(F("__temperature"));
 		print->print(F("\":"));
 		print->print(lastTemperature);
 
@@ -70,7 +73,7 @@ public:
 
 		print->print(F("\""));
 		print->print(instanceName);
-		print->print(F("_humidity"));
+		print->print(F("__humidity"));
 		print->print(F("\":"));
 		print->print(lastHumidity);
 	}

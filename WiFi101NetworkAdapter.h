@@ -36,7 +36,11 @@ void WiFi101NetworkAdapter::loop() {
 	// listen for incoming clients
 	WiFiClient client = server->available();
 	if (client) {
-		Serial.println("client available");
+
+		// wait until data is received in buffer (max. 1s)
+		long deadline = millis() + 1000;
+		while (client.available() == 0 && millis() < deadline);
+
 		protocolHandler->processClientRequest(&client);
 	}
 }
