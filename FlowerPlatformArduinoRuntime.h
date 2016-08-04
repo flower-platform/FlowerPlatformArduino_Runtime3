@@ -7,6 +7,7 @@
 
 #include <Arduino.h>
 #include <Print.h>
+//#include <FlowerPlatformStringManip.h>
 
 #ifdef ESP8266
 extern "C" {
