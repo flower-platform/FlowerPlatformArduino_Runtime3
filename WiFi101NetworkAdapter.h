@@ -17,11 +17,18 @@ protected:
 
 public:
 
+	/*
+	 * @flower { constructorVariant="Default" }
+	 */
+	WiFi101NetworkAdapter(String ipAddress, String ssid, String password);
+
 	void setup();
 
 	void loop();
 
 };
+
+WiFi101NetworkAdapter::WiFi101NetworkAdapter(String ipAddress, String ssid, String password) : IWiFiNetworkAdapter(ipAddress, ssid, password) { };
 
 void WiFi101NetworkAdapter::setup() {
 	INetworkAdapter::setup();
@@ -38,7 +45,7 @@ void WiFi101NetworkAdapter::loop() {
 	if (client) {
 
 		// wait until data is received in buffer (max. 1s)
-		long deadline = millis() + 1000;
+		unsigned long deadline = millis() + 1000;
 		while (client.available() == 0 && millis() < deadline);
 
 		protocolHandler->processClientRequest(&client);

@@ -5,6 +5,11 @@
 #ifndef WiFiNetworkAdapter_h
 #define WiFiNetworkAdapter_h
 
+#include <Arduino.h>
+#include <INetworkAdapter.h>
+#include <IProtocolHandler.h>
+#include <IWiFiNetworkAdapter.h>
+#include <stddef.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WiFiServer.h>
@@ -18,11 +23,18 @@ protected:
 
 public:
 
+	/*
+	 * @flower { constructorVariant="Default" }
+	 */
+	WiFiNetworkAdapter(const char* ipAddress, const char* ssid, const char* password);
+
 	void setup();
 
 	void loop();
 
 };
+
+WiFiNetworkAdapter::WiFiNetworkAdapter(const char* ipAddress, const char* ssid, const char* password) : IWiFiNetworkAdapter(ipAddress, ssid, password) { };
 
 void WiFiNetworkAdapter::setup() {
 	INetworkAdapter::setup();

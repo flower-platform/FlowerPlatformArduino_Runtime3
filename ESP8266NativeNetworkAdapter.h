@@ -21,11 +21,20 @@ protected:
 
 public:
 
+	/*
+	 * @flower { constructorVariant="Default" }
+	 */
+	ESP8266NativeNetworkAdapter(String ipAddress, String ssid, String password);
+
 	void setup();
 
 	void loop();
 
 };
+
+ESP8266NativeNetworkAdapter::ESP8266NativeNetworkAdapter(String ipAddress, String ssid, String password) : IWiFiNetworkAdapter(ipAddress, ssid, password) {
+
+}
 
 void ESP8266NativeNetworkAdapter::setup() {
 	INetworkAdapter::setup();

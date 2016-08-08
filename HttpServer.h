@@ -36,7 +36,7 @@ public:
 class HttpServer : public IProtocolHandler {
 protected:
 
-	Client* activeClient;
+	Client* activeClient = NULL;
 
 public:
 
@@ -45,6 +45,11 @@ public:
 	static const int CONTENT_TYPE_HTML = 1;
 
 	Callback<HttpCommandEvent>* onCommandReceived = NULL;
+
+	/*
+	 * @flower { constructorVariant="Default" }
+	 */
+	HttpServer(int port);
 
 	void processClientRequest(Client* client);
 
@@ -63,6 +68,10 @@ public:
 	void setup() { };
 
 	void loop() { };
+
+};
+
+HttpServer::HttpServer(int port) : IProtocolHandler(port) {
 
 };
 

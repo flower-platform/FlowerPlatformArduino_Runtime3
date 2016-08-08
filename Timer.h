@@ -2,9 +2,9 @@
 #define Timer_h
 
 #include <Arduino.h>
-#include <FlowerPlatformArduinoRuntime.h>
 #include <stdbool.h>
 #include <stddef.h>
+
 
 class Timer;
 
@@ -18,21 +18,26 @@ public:
 class Timer {
 protected:
 
-	unsigned long lastTimestamp;
+	unsigned long lastTimestamp = 0;
+
+	unsigned int currentCount = 0;
+
+	bool started;
 
 public:
+
+	/*
+	 * @flower { constructorVariant="Default" }
+	 */
+	Timer(bool autoStart);
 
 	Callback<TimerEvent>* onTimer = NULL;
 
 	Callback<TimerEvent>* onTimerComplete = NULL;
 
-	unsigned int currentCount;
+	unsigned long delay = 1000;
 
-	unsigned long delay;
-
-	unsigned int repeatCount;
-
-	bool autoStart;
+	unsigned int repeatCount = 0;
 
 	void setup();
 
@@ -46,14 +51,18 @@ public:
 
 };
 
+Timer::Timer(bool autoStart) {
+	started = autoStart;
+}
+
 void Timer::setup() { }
 
 void Timer::loop() {
-	if (!autoStart) {
+	if (!started) {
 		return;
 	}
 	if (repeatCount > 0 && currentCount > repeatCount) {
-		autoStart = false;
+		started = false;
 		return;
 	}
 	if (millis() > lastTimestamp + delay) {
@@ -68,7 +77,7 @@ void Timer::loop() {
 			if (onTimerComplete != NULL) {
 				(*onTimerComplete)(&event);
 			}
-			autoStart = false;
+			started = false;
 		}
 		lastTimestamp = millis();
 	}
@@ -76,17 +85,17 @@ void Timer::loop() {
 }
 
 void Timer::reset() {
-	autoStart = false;
+	started = false;
 	currentCount = 0;
 }
 
 void Timer::start() {
 	lastTimestamp = millis();
-	autoStart = true;
+	started = true;
 }
 
 void Timer::stop() {
-	autoStart = false;
+	started = false;
 }
 
 #endif

@@ -14,10 +14,15 @@
 
 class EthernetNetworkAdapter : public INetworkAdapter {
 protected:
-	EthernetServer* server;
+	EthernetServer* server = NULL;
 
 public:
 	uint8_t macAddress[6];
+
+	/*
+	 * @flower { constructorVariant="Default" }
+	 */
+	EthernetNetworkAdapter(String ipAddress, String macAddress);
 
 	// TOCO CM: temporary; we will use setters for ip and mac
 	const char* macAddressStr = NULL;
@@ -28,11 +33,13 @@ public:
 
 };
 
+EthernetNetworkAdapter::EthernetNetworkAdapter(String ipAddress, String macAddress) : INetworkAdapter(ipAddress) {
+	parseBytes(ipAddress.c_str(), '.', this->ipAddress, 4, 10);
+};
+
+
 void EthernetNetworkAdapter::setup() {
 	INetworkAdapter::setup();
-	if (macAddressStr != NULL) {
-		INetworkAdapter::parseBytes(macAddressStr, ':', macAddress, 6, 16);
-	}
 
 	// Disable SPI for SD card.
 	// This workaround is needed for Ethernet shield clones. The original Ethernet shield should work properly without this, but the clones don't.

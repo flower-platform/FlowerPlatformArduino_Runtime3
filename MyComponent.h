@@ -35,4 +35,4 @@ public:
  * @fp.ignore
  */
 class ShouldntAppear {
-}
+};

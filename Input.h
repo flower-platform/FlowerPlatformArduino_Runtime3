@@ -4,19 +4,19 @@
 #include <Arduino.h>
 #include <FlowerPlatformArduinoRuntime.h>
 #include <Print.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <WString.h>
+
 
 
 
 class Input {
 protected:
 
-	int lastValue;
+	int lastValue = 0;
 
-	unsigned long lastTime;
+	unsigned long lastTime = 0;
+
+	uint8_t pin;
 
 public:
 	// TODO CS: TEMP
@@ -24,13 +24,16 @@ public:
 
 	Callback<ValueChangedEvent>* onValueChanged = NULL;
 
-	uint8_t pin;
-
 	unsigned int pollInterval = 50;
 
 	bool internalPullUp = false;
 
 	bool isAnalog = false;
+
+	/*
+	 * @flower { constructorVariant="Default" }
+	 */
+	Input(int pin);
 
 	void setup();
 
@@ -39,6 +42,10 @@ public:
 	void printStateAsJson(const __FlashStringHelper* instanceName, Print* print);
 
 };
+
+Input::Input(int pin) {
+	this->pin = pin;
+}
 
 void Input::setup() {
 	pinMode(pin, INPUT);

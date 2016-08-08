@@ -5,23 +5,32 @@
 #ifndef Output_h
 #define Output_h
 
+#include <Arduino.h>
 #include <FlowerPlatformArduinoRuntime.h>
+#include <Print.h>
+
 
 class Output {
 protected:
 
-	int lastValue;
+	int lastValue = 0;
+
+	uint8_t pin;
+
+	uint8_t initialValue = LOW;
 
 public:
 	// TODO CS: TEMP
 	bool contributesToState;
 
-	uint8_t pin;
-	uint8_t initialValue = LOW;
-
 	Callback<ValueChangedEvent>* onValueChanged = NULL;
 
 	bool isPwm = false;
+
+	/*
+	 * @flower { constructorVariant="Default" }
+	 */
+	Output(int pin);
 
 	void loop();
 
@@ -40,6 +49,10 @@ public:
 	void toggleHighLow();
 
 };
+
+Output::Output(int pin) {
+	this->pin = pin;
+}
 
 void Output::loop() {
 }

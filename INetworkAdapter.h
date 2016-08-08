@@ -14,14 +14,9 @@ public:
 
 	uint8_t ipAddress[4];
 
-	// TOCO CM: temporary; we will use setters for ip and mac
-	const char* ipAddressStr = NULL;
+	INetworkAdapter(String ipAddress);
 
-	virtual void setup() {
-		if (ipAddressStr != NULL) {
-			parseBytes(ipAddressStr, '.', ipAddress, 4, 10);
-		}
-	}
+	virtual void setup() { }
 
 	virtual void loop() { }
 
@@ -39,4 +34,9 @@ public:
 	}
 
 };
+
+INetworkAdapter::INetworkAdapter(String ipAddress) {
+	parseBytes(ipAddress.c_str(), '.', this->ipAddress, 4, 10);
+}
+
 #endif

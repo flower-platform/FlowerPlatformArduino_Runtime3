@@ -5,10 +5,16 @@
 #ifndef ESP8266NetworkAdapter_h
 #define ESP8266NetworkAdapter_h
 
+#include <avr/pgmspace.h>
 #include <Arduino.h>
 #include <Client.h>
+#include <FlowerPlatformArduinoRuntime.h>
 #include <HardwareSerial.h>
+#include <INetworkAdapter.h>
 #include <IPAddress.h>
+#include <IProtocolHandler.h>
+#include <IWiFiNetworkAdapter.h>
+#include <WString.h>
 
 
 
@@ -127,7 +133,6 @@ public:
 
 };
 
-
 class ESP8266NetworkAdapter : public IWiFiNetworkAdapter {
 public:
 
@@ -155,9 +160,14 @@ public:
 
 	uint8_t extraClientsStack[8];	// stack holding ids of extra connections (when there are more than MAX_CLIENTS connections)
 
-	uint8_t extraClientsSP;	// stack pointer
+	uint8_t extraClientsSP = 0;	// stack pointer
 
-	ESP8266Client* recvClient;	// active receiver
+	ESP8266Client* recvClient = NULL;	// active receiver
+
+	/*
+	 * @flower { constructorVariant="Default" }
+	 */
+	ESP8266NetworkAdapter(String ipAddress, String ssid, String password);
 
 	void setup();
 
@@ -169,9 +179,9 @@ public:
 
 	void closeConnection(uint8_t clientId);
 
-	int writeStatus;
+	int writeStatus = 0;
 
-	unsigned long readDeadlineTimestamp;
+	unsigned long readDeadlineTimestamp = 0;
 
 };
 
@@ -295,6 +305,10 @@ CharSequenceParser ESP8266NetworkAdapter::sendOkParser("SEND OK\r\n");
 
 CharSequenceParser ESP8266NetworkAdapter::ipdParser("+IPD,");
 
+
+ESP8266NetworkAdapter::ESP8266NetworkAdapter(String ipAddress, String ssid, String password) : IWiFiNetworkAdapter(ipAddress, ssid, password) {
+
+}
 
 void ESP8266NetworkAdapter::setup() {
 	INetworkAdapter::setup();
