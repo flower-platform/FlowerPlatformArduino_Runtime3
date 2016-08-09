@@ -13,11 +13,11 @@
 class Output {
 protected:
 
-	int lastValue = 0;
+	int lastValue;
 
 	uint8_t pin;
 
-	uint8_t initialValue = LOW;
+	bool isPwm;
 
 public:
 	// TODO CS: TEMP
@@ -25,16 +25,10 @@ public:
 
 	Callback<ValueChangedEvent>* onValueChanged = NULL;
 
-	bool isPwm = false;
-
 	/*
 	 * @flower { constructorVariant="Default" }
 	 */
-	Output(int pin);
-
-	void loop();
-
-	void setup();
+	Output(int pin, bool isPwm, uint8_t initialValue);
 
 	void printStateAsJson(const __FlashStringHelper* instanceName, Print* print);
 
@@ -50,14 +44,9 @@ public:
 
 };
 
-Output::Output(int pin) {
+Output::Output(int pin, bool isPwm = false, uint8_t initialValue = LOW) {
 	this->pin = pin;
-}
-
-void Output::loop() {
-}
-
-void Output::setup() {
+    this->isPwm = isPwm;
     pinMode(pin, OUTPUT);
 	digitalWrite(pin, initialValue);
     lastValue = initialValue;

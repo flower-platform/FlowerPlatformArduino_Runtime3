@@ -38,6 +38,8 @@ protected:
 
 	Client* activeClient = NULL;
 
+	void dispatchEvent(const char* requestMethod, const char* requestUrl, Client* client);
+
 public:
 
 	static const int CONTENT_TYPE_JSON = 0;
@@ -52,8 +54,6 @@ public:
 	HttpServer(int port);
 
 	void processClientRequest(Client* client);
-
-	void dispatchEvent(const char* requestMethod, const char* requestUrl, Client* client);
 
 	void httpSuccess(Print* print, int contentType = CONTENT_TYPE_JSON, bool bzip = false);
 

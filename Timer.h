@@ -41,8 +41,6 @@ public:
 
 	unsigned int repeatCount = 0;
 
-	void setup();
-
 	void loop();
 
 	void reset();
@@ -56,8 +54,6 @@ public:
 Timer::Timer(bool autoStart) {
 	started = autoStart;
 }
-
-void Timer::setup() { }
 
 void Timer::loop() {
 	if (!started) {

@@ -12,14 +12,6 @@ public:
 
 	IProtocolHandler* protocolHandler;
 
-	uint8_t ipAddress[4];
-
-	INetworkAdapter(String ipAddress);
-
-	virtual void setup() { }
-
-	virtual void loop() { }
-
 	virtual ~INetworkAdapter() { }
 
 	void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) {
@@ -35,8 +27,5 @@ public:
 
 };
 
-INetworkAdapter::INetworkAdapter(String ipAddress) {
-	parseBytes(ipAddress.c_str(), '.', this->ipAddress, 4, 10);
-}
 
 #endif

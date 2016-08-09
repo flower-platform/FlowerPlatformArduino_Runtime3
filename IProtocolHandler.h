@@ -17,10 +17,6 @@ public:
 
 	virtual void processClientRequest(Client* client) = 0;
 
-	virtual void setup() { };
-
-	virtual void loop() { };
-
 	virtual ~IProtocolHandler() { };
 
 };

@@ -1,3 +1,10 @@
+/*
+ *  Author: Anca Barbu
+ */
+
+#ifndef FlowerPlatformStringManip_h
+#define FlowerPlatformStringManip_h
+
 String changeCaseOfString(String s, char* caseMode) {
 	String result = s;
 	if (strcmp(caseMode, "lower")) {
@@ -19,3 +26,5 @@ String getReplacedString(String text, String what, String with) {
 	result.replace(what, with);
 	return result;
 }
+
+#endif

@@ -6,11 +6,11 @@
 #define WiFi101NetworkAdapter_h
 
 #include <IProtocolHandler.h>
-#include <IWiFiNetworkAdapter.h>
+#include <INetworkAdapter.h>
 #include <SPI.h>
 #include <WiFi101.h>
 
-class WiFi101NetworkAdapter : public IWiFiNetworkAdapter {
+class WiFi101NetworkAdapter : public INetworkAdapter {
 protected:
 
 	WiFiServer* server = NULL;
@@ -28,14 +28,16 @@ public:
 
 };
 
-WiFi101NetworkAdapter::WiFi101NetworkAdapter(String ipAddress, String ssid, String password) : IWiFiNetworkAdapter(ipAddress, ssid, password) { };
+WiFi101NetworkAdapter::WiFi101NetworkAdapter(String ipAddress, String ssid, String password) {
+	uint8_t ipAddressBuf[4];
+	parseBytes(ipAddress.c_str(), '.', ipAddressBuf, 4, 10);
+
+	WiFi.config(ipAddressBuf);
+	WiFi.begin(ssid, password);
+}
 
 void WiFi101NetworkAdapter::setup() {
-	INetworkAdapter::setup();
-
 	this->server = new WiFiServer(protocolHandler->port);
-	WiFi.config(ipAddress);
-	WiFi.begin(ssid, password);
 	this->server->begin();
 }
 
