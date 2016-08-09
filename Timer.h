@@ -1,10 +1,12 @@
-#ifndef Timer_h
+/*
+ *  Author: Claudiu Matei
+ */
+
+ #ifndef Timer_h
 #define Timer_h
 
 #include <Arduino.h>
-#include <stdbool.h>
-#include <stddef.h>
-
+#include <FlowerPlatformArduinoRuntime.h>
 
 class Timer;
 
