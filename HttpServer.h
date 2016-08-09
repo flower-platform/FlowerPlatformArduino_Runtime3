@@ -65,6 +65,8 @@ public:
 
 	int getIntParameterValue(const char* url, const char* param);
 
+	bool getBoolParameterValue(const char* url, const char* param);
+
 	void setup() { };
 
 	void loop() { };
@@ -194,6 +196,12 @@ int HttpServer::getIntParameterValue(const char* url, const char* param) {
 	char valStr[8];
 	getStringParameterValue(url, param, valStr);
 	return atoi(valStr);
+}
+
+bool HttpServer::getBoolParameterValue(const char* url, const char* param) {
+	char valStr[8];
+	getStringParameterValue(url, param, valStr);
+	return strcmp(valStr, "true") == 0;
 }
 
 #endif
