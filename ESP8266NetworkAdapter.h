@@ -36,7 +36,7 @@
 #define WRITE_TIMEOUT 1500
 
 /*
- * @fp.ignore
+ * @flower { ignore = "true" }
  */
 class CharSequenceParser {
 public:
@@ -75,7 +75,7 @@ protected:
 class ESP8266NetworkAdapter;
 
 /*
- * @fp.ignore
+ * @flower { ignore = "true" }
  */
 class ESP8266Client : public Client {
 public:
@@ -177,12 +177,12 @@ public:
 	void loop();
 
 	/*
-	 * @fp.ignore
+	 * @flower { ignore = "true" }
 	 */
 	int readNextChar(); // reads a char from ESP8266 and processes it
 
 	/*
-	 * @fp.ignore
+	 * @flower { ignore = "true" }
 	 */
 	int writeStatus = 0;
 
