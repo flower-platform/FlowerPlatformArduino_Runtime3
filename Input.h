@@ -19,8 +19,6 @@ protected:
 
 	uint8_t pin;
 
-	unsigned int pollInterval = 50;
-
 	bool isAnalog = false;
 
 
@@ -28,12 +26,14 @@ public:
 	// TODO CS: TEMP
 	bool contributesToState;
 
+	unsigned int pollInterval = 50;
+
 	Callback<ValueChangedEvent>* onValueChanged = NULL;
 
 	/*
 	 * @flower { constructorVariant="Default" }
 	 */
-	Input(int pin, bool isAnalog, bool internalPullUp, int pollInterval);
+	Input(int pin, bool isAnalog, bool internalPullUp);
 
 	void loop();
 
@@ -41,10 +41,9 @@ public:
 
 };
 
-Input::Input(int pin, bool isAnalog = false, bool internalPullUp = false, int pollInterval = 50) {
+Input::Input(int pin, bool isAnalog = false, bool internalPullUp = false) {
 	this->pin = pin;
 	this->isAnalog = isAnalog;
-	this->pollInterval = pollInterval;
 	pinMode(pin, INPUT);
 	if (internalPullUp) {
 		digitalWrite(pin, HIGH);

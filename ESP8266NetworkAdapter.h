@@ -13,7 +13,6 @@
 #include <INetworkAdapter.h>
 #include <IPAddress.h>
 #include <IProtocolHandler.h>
-#include <IWiFiNetworkAdapter.h>
 #include <WString.h>
 
 //#define DEBUG_ESP8266NetworkAdapter
