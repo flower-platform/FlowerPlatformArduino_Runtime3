@@ -33,7 +33,7 @@ public:
 	/*
 	 * @flower { constructorVariant="Default" }
 	 */
-	Input(int pin, bool isAnalog, bool internalPullUp);
+	Input(int pin, bool isAnalog = false, bool internalPullUp = true);
 
 	void loop();
 
