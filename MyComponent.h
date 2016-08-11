@@ -19,20 +19,20 @@ public:
 	int attribute3;
 
 	/*
-	 * @fp.ignore
+	 * @flower { ignore = "true" }
 	 */
 	int attribute4;
 	
 	void (*event3)(ValueChangedEvent*) = NULL;
 
 	/*
-	 * @fp.ignore
+	 * @flower { ignore = "true" }
 	 */
 	void (*event4)(ValueChangedEvent*) = NULL;
 }
 
 /*
- * @fp.ignore
+ * @flower { ignore = "true" }
  */
 class ShouldntAppear {
 };

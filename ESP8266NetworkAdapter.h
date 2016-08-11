@@ -13,10 +13,7 @@
 #include <INetworkAdapter.h>
 #include <IPAddress.h>
 #include <IProtocolHandler.h>
-#include <IWiFiNetworkAdapter.h>
 #include <WString.h>
-
-
 
 //#define DEBUG_ESP8266NetworkAdapter
 
@@ -39,7 +36,7 @@
 #define WRITE_TIMEOUT 1500
 
 /*
- * @fp.ignore
+ * @flower { ignore = "true" }
  */
 class CharSequenceParser {
 public:
@@ -78,7 +75,7 @@ protected:
 class ESP8266NetworkAdapter;
 
 /*
- * @fp.ignore
+ * @flower { ignore = "true" }
  */
 class ESP8266Client : public Client {
 public:
@@ -133,7 +130,23 @@ public:
 
 };
 
-class ESP8266NetworkAdapter : public IWiFiNetworkAdapter {
+class ESP8266NetworkAdapter : public INetworkAdapter {
+protected:
+
+	uint8_t extraClientsStack[8];	// stack holding ids of extra connections (when there are more than MAX_CLIENTS connections)
+
+	uint8_t extraClientsSP = 0;	// stack pointer
+
+	ESP8266Client clients[MAX_CLIENTS];
+
+	ESP8266Client* recvClient = NULL;	// active receiver
+
+	unsigned long readDeadlineTimestamp = 0;
+
+	void closeInactiveClients();	// closes the clients marked to be closed ("stopped") and the extra connections
+
+	void closeConnection(uint8_t clientId);
+
 public:
 
 	// write status constants
@@ -154,34 +167,24 @@ public:
 	static CharSequenceParser disconnectParser;
 	static CharSequenceParser ipdParser;
 
-	bool accessPointMode = false;
-
-	ESP8266Client clients[MAX_CLIENTS];
-
-	uint8_t extraClientsStack[8];	// stack holding ids of extra connections (when there are more than MAX_CLIENTS connections)
-
-	uint8_t extraClientsSP = 0;	// stack pointer
-
-	ESP8266Client* recvClient = NULL;	// active receiver
-
 	/*
 	 * @flower { constructorVariant="Default" }
 	 */
-	ESP8266NetworkAdapter(String ipAddress, String ssid, String password);
+	ESP8266NetworkAdapter(String ipAddress, String ssid, String password, bool accessPointMode);
 
 	void setup();
 
 	void loop();
 
+	/*
+	 * @flower { ignore = "true" }
+	 */
 	int readNextChar(); // reads a char from ESP8266 and processes it
 
-	void closeInactiveClients();	// closes the clients marked to be closed ("stopped") and the extra connections
-
-	void closeConnection(uint8_t clientId);
-
+	/*
+	 * @flower { ignore = "true" }
+	 */
 	int writeStatus = 0;
-
-	unsigned long readDeadlineTimestamp = 0;
 
 };
 
@@ -306,13 +309,7 @@ CharSequenceParser ESP8266NetworkAdapter::sendOkParser("SEND OK\r\n");
 CharSequenceParser ESP8266NetworkAdapter::ipdParser("+IPD,");
 
 
-ESP8266NetworkAdapter::ESP8266NetworkAdapter(String ipAddress, String ssid, String password) : IWiFiNetworkAdapter(ipAddress, ssid, password) {
-
-}
-
-void ESP8266NetworkAdapter::setup() {
-	INetworkAdapter::setup();
-
+ESP8266NetworkAdapter::ESP8266NetworkAdapter(String ipAddress, String ssid, String password, bool accessPointMode = false) {
 	for (uint8_t i = 0; i < MAX_CLIENTS; i++) {
 		clients[i].clientId = i;
 		clients[i].networkAdapter = this;
@@ -321,7 +318,7 @@ void ESP8266NetworkAdapter::setup() {
 
 	delay(1000); // wait for ESP to boot up
 
-	DB_PLN_ESP8266NetworkAdapter(F("ESP setup"));
+	DB_PLN_ESP8266NetworkAdapter(F("ESP init"));
 
 	esp.begin(115200);
 	char c;
@@ -344,10 +341,7 @@ void ESP8266NetworkAdapter::setup() {
 
 	// set static IP address
 	esp.print(accessPointMode ? F("AT+CIPAP_CUR=\"") : F("AT+CIPSTA_CUR=\""));
-	esp.print(ipAddress[0]); esp.print(".");
-	esp.print(ipAddress[1]); esp.print(".");
-	esp.print(ipAddress[2]); esp.print(".");
-	esp.print(ipAddress[3]); esp.println("\"");
+	esp.print(ipAddress); esp.println("\"");
 	while ((c = esp.read()) == -1 || !okParser.parseNextChar(c));
 
 	// access point mode setting (either set up as AP, or join an AP)
@@ -359,8 +353,6 @@ void ESP8266NetworkAdapter::setup() {
 	esp.println();
 	while ((c = esp.read()) == -1 || !okParser.parseNextChar(c));
 
-
-
 	// set mux mode to multi
 	esp.println(F("AT+CIPMUX=1"));
 	while ((c = esp.read()) == -1 || !okParser.parseNextChar(c));
@@ -370,10 +362,18 @@ void ESP8266NetworkAdapter::setup() {
 	//	while ((c = esp.read()) == -1 || !okParser.parseNextChar(c))  { if (c != -1) Serial.print(c); }
 	//	DB_PLN_ESP8266NetworkAdapter(F("set timeout"));
 
+	DB_PLN_ESP8266NetworkAdapter(F("ESP init ready"));
+
+}
+
+void ESP8266NetworkAdapter::setup() {
+	char c;
+
+	DB_PLN_ESP8266NetworkAdapter(F("ESP setup"));
+
 	// open port (server socket)
 	esp.print(F("AT+CIPSERVER=1,")); esp.print(protocolHandler->port); esp.println();
 	while ((c = esp.read()) == -1 || !okParser.parseNextChar(c));
-
 
 	DB_PLN_ESP8266NetworkAdapter(F("ESP setup ready"));
 

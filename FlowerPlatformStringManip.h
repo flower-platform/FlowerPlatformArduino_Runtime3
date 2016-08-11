@@ -1,7 +1,11 @@
 /*
  *  Author: Anca Barbu
  */
-String changeCaseOfString(String s, String caseMode) {
+
+#ifndef FlowerPlatformStringManip_h
+#define FlowerPlatformStringManip_h
+
+String changeCaseOfString(String s, char* caseMode) {
 	String result = s;
 	
 	if (caseMode == "lower") {
@@ -58,3 +62,6 @@ String* splitTextAtFirst(String text, String delim) {
 	return result;
 
 }*/
+
+#endif
+

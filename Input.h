@@ -1,13 +1,14 @@
+/*
+ *  Author: Claudiu Matei
+ */
+
 #ifndef Input_h
 #define Input_h
 
 #include <Arduino.h>
-#include <FlowerPlatformArduinoRuntime.h>
 #include <Print.h>
 #include <WString.h>
-
-
-
+#include <FlowerPlatformArduinoRuntime.h>
 
 class Input {
 protected:
@@ -18,24 +19,21 @@ protected:
 
 	uint8_t pin;
 
+	bool isAnalog = false;
+
+
 public:
 	// TODO CS: TEMP
 	bool contributesToState;
 
-	Callback<ValueChangedEvent>* onValueChanged = NULL;
-
 	unsigned int pollInterval = 50;
 
-	bool internalPullUp = false;
-
-	bool isAnalog = false;
+	Callback<ValueChangedEvent>* onValueChanged = NULL;
 
 	/*
 	 * @flower { constructorVariant="Default" }
 	 */
-	Input(int pin);
-
-	void setup();
+	Input(int pin, bool isAnalog, bool internalPullUp);
 
 	void loop();
 
@@ -43,27 +41,20 @@ public:
 
 };
 
-Input::Input(int pin) {
+Input::Input(int pin, bool isAnalog = false, bool internalPullUp = false) {
 	this->pin = pin;
-}
-
-void Input::setup() {
+	this->isAnalog = isAnalog;
 	pinMode(pin, INPUT);
 	if (internalPullUp) {
 		digitalWrite(pin, HIGH);
 		lastValue = HIGH;
 	} else {
-		lastValue = LOW;
+		lastValue = isAnalog ? analogRead(pin) : digitalRead(pin);
 	}
 }
 
 void Input::loop() {
-	int value;
-	if (isAnalog) {
-		value = analogRead(pin);
-	} else {
-		value = digitalRead(pin);
-	}
+	int value = isAnalog ? analogRead(pin) : digitalRead(pin);
 	if (value == lastValue) {
     	return;
     }

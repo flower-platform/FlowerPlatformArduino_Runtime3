@@ -11,15 +11,14 @@ class IProtocolHandler {
 
 public:
 
+	/*
+	 * @flower { ignore = "true" }
+	 */
 	int port;
 
 	IProtocolHandler(int port);
 
 	virtual void processClientRequest(Client* client) = 0;
-
-	virtual void setup() { };
-
-	virtual void loop() { };
 
 	virtual ~IProtocolHandler() { };
 

@@ -9,12 +9,11 @@
 #include <ESP8266WiFi.h>
 #include <IPAddress.h>
 #include <IProtocolHandler.h>
-#include <IWiFiNetworkAdapter.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WiFiServer.h>
 
-class ESP8266NativeNetworkAdapter : public IWiFiNetworkAdapter {
+class ESP8266NativeNetworkAdapter : public INetworkAdapter {
 protected:
 
 	WiFiServer* server = NULL;
@@ -32,19 +31,20 @@ public:
 
 };
 
-ESP8266NativeNetworkAdapter::ESP8266NativeNetworkAdapter(String ipAddress, String ssid, String password) : IWiFiNetworkAdapter(ipAddress, ssid, password) {
+ESP8266NativeNetworkAdapter::ESP8266NativeNetworkAdapter(String ipAddress, String ssid, String password) {
+	WiFi.begin(ssid, password);
 
+	uint8_t ipAddressBuf[4];
+	parseBytes(ipAddress.c_str(), '.', ipAddressBuf, 4, 10);
+
+	IPAddress gateway = IPAddress(ipAddressBuf);
+	gateway[3] = 1;
+
+	WiFi.config(ipAddressBuf, gateway, IPAddress({0xFF, 0xFF, 0xFF, 0x00 }));
 }
 
 void ESP8266NativeNetworkAdapter::setup() {
-	INetworkAdapter::setup();
-
 	this->server = new WiFiServer(protocolHandler->port);
-	WiFi.begin(ssid, password);
-	IPAddress ip = IPAddress(ipAddress);
-	IPAddress gateway = ip;
-	gateway[3] = 1;
-	WiFi.config(ip, gateway, IPAddress({0xFF, 0xFF, 0xFF, 0x00 }));
 	this->server->begin();
 }
 
