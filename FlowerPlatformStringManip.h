@@ -5,7 +5,7 @@
 #ifndef FlowerPlatformStringManip_h
 #define FlowerPlatformStringManip_h
 
-String changeCaseOfString(String s, char* caseMode) {
+String changeCaseOfString(String s, String caseMode) {
 	String result = s;
 	
 	if (caseMode == "lower") {
