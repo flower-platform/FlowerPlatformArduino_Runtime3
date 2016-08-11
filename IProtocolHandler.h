@@ -11,6 +11,9 @@ class IProtocolHandler {
 
 public:
 
+	/*
+	 * @flower { ignore = "true" }
+	 */
 	int port;
 
 	IProtocolHandler(int port);
