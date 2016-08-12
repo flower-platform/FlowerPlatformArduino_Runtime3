@@ -28,7 +28,7 @@ public:
 	/*
 	 * @flower { constructorVariant="Default" }
 	 */
-	Output(int pin, bool isPwm, uint8_t initialValue);
+	Output(int pin, bool isPwm = false, uint8_t initialValue = LOW);
 
 	void printStateAsJson(const __FlashStringHelper* instanceName, Print* print);
 

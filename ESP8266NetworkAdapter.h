@@ -170,7 +170,7 @@ public:
 	/*
 	 * @flower { constructorVariant="Default" }
 	 */
-	ESP8266NetworkAdapter(String ipAddress, String ssid, String password, bool accessPointMode);
+	ESP8266NetworkAdapter(String ipAddress, String ssid, String password, bool accessPointMode = false);
 
 	void setup();
 

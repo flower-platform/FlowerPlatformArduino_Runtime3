@@ -51,7 +51,7 @@ public:
 	/*
 	 * @flower { constructorVariant="Default" }
 	 */
-	HttpServer(int port);
+	HttpServer(int port = 80);
 
 	void processClientRequest(Client* client);
 
@@ -73,7 +73,7 @@ public:
 
 };
 
-HttpServer::HttpServer(int port) : IProtocolHandler(port) {
+HttpServer::HttpServer(int port = 80) : IProtocolHandler(port) {
 
 };
 

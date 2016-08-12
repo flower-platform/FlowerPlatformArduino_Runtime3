@@ -31,7 +31,7 @@ public:
 	/*
 	 * @flower { constructorVariant="Default" }
 	 */
-	Timer(bool autoStart);
+	Timer(bool autoStart = true);
 
 	Callback<TimerEvent>* onTimer = NULL;
 
@@ -51,7 +51,7 @@ public:
 
 };
 
-Timer::Timer(bool autoStart) {
+Timer::Timer(bool autoStart = true) {
 	started = autoStart;
 }
 
