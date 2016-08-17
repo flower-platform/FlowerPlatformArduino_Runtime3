@@ -41,7 +41,7 @@ public:
 
 };
 
-Input::Input(int pin, bool isAnalog = false, bool internalPullUp = true) {
+Input::Input(int pin, bool isAnalog, bool internalPullUp) {
 	this->pin = pin;
 	this->isAnalog = isAnalog;
 	pinMode(pin, INPUT);

@@ -73,9 +73,7 @@ public:
 
 };
 
-HttpServer::HttpServer(int port = 80) : IProtocolHandler(port) {
-
-};
+HttpServer::HttpServer(int port) : IProtocolHandler(port) { };
 
 void HttpServer::processClientRequest(Client* client) {
 	activeClient = client;

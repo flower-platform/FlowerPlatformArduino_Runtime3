@@ -44,7 +44,7 @@ public:
 
 };
 
-Output::Output(int pin, bool isPwm = false, uint8_t initialValue = LOW) {
+Output::Output(int pin, bool, uint8_t) {
 	this->pin = pin;
     this->isPwm = isPwm;
     pinMode(pin, OUTPUT);

@@ -309,7 +309,7 @@ CharSequenceParser ESP8266NetworkAdapter::sendOkParser("SEND OK\r\n");
 CharSequenceParser ESP8266NetworkAdapter::ipdParser("+IPD,");
 
 
-ESP8266NetworkAdapter::ESP8266NetworkAdapter(String ipAddress, String ssid, String password, bool accessPointMode = false) {
+ESP8266NetworkAdapter::ESP8266NetworkAdapter(String ipAddress, String ssid, String password, bool accessPointMode) {
 	for (uint8_t i = 0; i < MAX_CLIENTS; i++) {
 		clients[i].clientId = i;
 		clients[i].networkAdapter = this;

@@ -51,7 +51,7 @@ public:
 
 };
 
-Timer::Timer(bool autoStart = true) {
+Timer::Timer(bool autoStart) {
 	started = autoStart;
 }
 
