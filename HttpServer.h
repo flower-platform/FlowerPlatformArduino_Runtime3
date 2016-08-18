@@ -18,7 +18,7 @@
 #define DB_PLN_HttpServer(text)
 #endif
 
-#define LINE_BUFFER_SIZE 64
+#define LINE_BUFFER_SIZE 256
 
 class HttpServer;
 
