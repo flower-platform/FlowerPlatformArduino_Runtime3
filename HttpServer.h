@@ -66,6 +66,8 @@ public:
 	int getIntParameterValue(const char* url, const char* param);
 
 	bool getBoolParameterValue(const char* url, const char* param);
+	
+	double getDoubleParameterValue(const char* url, const char* param);
 
 	void setup() { };
 
@@ -200,6 +202,12 @@ bool HttpServer::getBoolParameterValue(const char* url, const char* param) {
 	char valStr[8];
 	getStringParameterValue(url, param, valStr);
 	return strcmp(valStr, "true") == 0;
+}
+
+double HttpServer::getDoubleParameterValue(const char* url, const char* param) {
+	char valStr[8];
+	getStringParameterValue(url, param, valStr);
+	return atof(valStr);
 }
 
 #endif
