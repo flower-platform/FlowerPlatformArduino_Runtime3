@@ -57,7 +57,7 @@ bool RemoteObject::callFunction(const char* functionNamePSTR, BufferedPrint<>* a
 	}
 
 	BufferedPrint<64> buf(connection->out);
-	buf.print('0'); buf.print(TERM); // hasNext = false
+//	buf.print('0'); buf.print(TERM); // hasNext = false
 	if (rappInstance) {
 		write_P(&buf, rappInstance);
 	}
@@ -95,7 +95,7 @@ bool RemoteObject::callFunction(const char* functionNamePSTR, BufferedPrint<>* a
 
 	switch(cmd) {
 	case 'R': // result
-		connection->in->find(TERM); // hasNext (ignored)
+//		connection->in->find(TERM); // hasNext (ignored)
 		connection->in->find(TERM); // callbackId (ignored)
 		executeCallback(callback, returnTypeId, connection->in);
 		break;
@@ -140,7 +140,7 @@ bool RemoteObjectServer::processCommand(Stream* in, Print* out) {
 	case 'I': // INVOKE
 		// ---------- read request ------------
 		char rbuf[RECV_BUFFER_SIZE];
-		size = in->readBytesUntil(TERM, rbuf, RECV_BUFFER_SIZE); // hasNext (ignored)
+//		size = in->readBytesUntil(TERM, rbuf, RECV_BUFFER_SIZE); // hasNext (ignored)
 		in->readBytesUntil(TERM, rbuf, RECV_BUFFER_SIZE); // rappInstanceId (ignored)
 		size = in->readBytesUntil(TERM, rbuf, RECV_BUFFER_SIZE); // callbackId
 		char callbackIdStr[size + 1];
@@ -154,7 +154,7 @@ bool RemoteObjectServer::processCommand(Stream* in, Print* out) {
 
 		//buffer command specific packet fields and response
 		BufferedPrint<64> tbuf(out);
-		tbuf.print('0'); tbuf.print(TERM); // hasNext = false
+//		tbuf.print('0'); tbuf.print(TERM); // hasNext = false
 		tbuf.print(callbackIdStr); tbuf.print(TERM); // callbackId
 		dispatchFunctionCall(rbuf, &tbuf);
 

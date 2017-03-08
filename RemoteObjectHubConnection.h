@@ -6,12 +6,17 @@
 #ifndef REMOTEOBJECTHUBCONNECTION_H_
 #define REMOTEOBJECTHUBCONNECTION_H_
 
+#include <Arduino.h>
+#include <FlowerPlatformArduinoRuntime.h>
+#include <HardwareSerial.h>
+#include <NetworkConnection.h>
 #include <RemoteObject.h>
+#include <RemoteObjectUtils.h>
 
 class RemoteObjectHubConnection {
 public:
 
-	RemoteObjectHubConnection(NetworkConnection* connection, unsigned long pollInterval, const char* securityTokenPSTR, const char* localRappInstanceName);
+	RemoteObjectHubConnection(NetworkConnection* connection, unsigned long pollInterval, const char* securityTokenPSTR, const char* localRappInstanceName, uint16_t localServerPort);
 
 	bool processCommand();
 
@@ -33,15 +38,18 @@ protected:
 
 	bool registered = false;
 
+	uint16_t localServerPort = 0;
+
 	void registerToHub();
 
 };
 
-RemoteObjectHubConnection::RemoteObjectHubConnection(NetworkConnection* connection, unsigned long pollInterval, const char* securityTokenPSTR, const char* localRappInstanceName) {
+RemoteObjectHubConnection::RemoteObjectHubConnection(NetworkConnection* connection, unsigned long pollInterval, const char* securityTokenPSTR, const char* localRappInstanceName, uint16_t localServerPort) {
 	this->connection = connection;
 	this->pollInterval = pollInterval;
 	this->securityToken = securityTokenPSTR;
 	this->localRappInstanceName = localRappInstanceName;
+	this->localServerPort = localServerPort;
 }
 
 bool RemoteObjectHubConnection::processCommand() {
@@ -64,7 +72,7 @@ bool RemoteObjectHubConnection::processCommand() {
 
 	switch (cmd) {
 	case 'I': {  // INVOKE
-		size = connection->in->readBytesUntil('\0', rbuf, RECV_BUFFER_SIZE); // hasNext
+//		size = connection->in->readBytesUntil('\0', rbuf, RECV_BUFFER_SIZE); // hasNext
 //		hasNext = (*rbuf == '1');
 		connection->in->readBytesUntil('\0', rbuf, RECV_BUFFER_SIZE); // rappInstanceId (ignored)
 		size = connection->in->readBytesUntil('\0', rbuf, RECV_BUFFER_SIZE); // callbackId
@@ -75,7 +83,7 @@ bool RemoteObjectHubConnection::processCommand() {
 
 		//buffer command specific packet fields and response
 		BufferedPrint<64> tbuf(connection->out);
-		tbuf.print('0'); tbuf.print(TERM); // hasNext = false
+//		tbuf.print('0'); tbuf.print(TERM); // hasNext = false
 		tbuf.print(callbackIdStr); tbuf.print(TERM); // callbackId
 		dispatchFunctionCall(rbuf, &tbuf);
 
@@ -88,7 +96,7 @@ bool RemoteObjectHubConnection::processCommand() {
 		connection->flush();
 		return true; }
 	case 'R': { // result
-		size = connection->in->readBytesUntil(TERM, rbuf, RECV_BUFFER_SIZE); // hasNext
+//		size = connection->in->readBytesUntil(TERM, rbuf, RECV_BUFFER_SIZE); // hasNext
 //		hasNext = (*rbuf == '1');
 		size = connection->in->readBytesUntil(TERM, rbuf, RECV_BUFFER_SIZE); // callbackId
 		strncpy(callbackIdStr, rbuf, size);
@@ -107,6 +115,7 @@ void RemoteObjectHubConnection::registerToHub() {
 	Serial.println("Registering...");
 	BufferedPrint<32> buf(connection->out);
 	write_P(&buf, localRappInstanceName); buf.print(TERM);
+	buf.print(localServerPort);	buf.print(TERM);
 	connection->startHttpRequest("/hub", FPRP_FIXED_PACKET_SIZE + buf.getSize());
 	fprp_startCommand(connection->out, 'A', securityToken); // register
 	buf.flush();
