@@ -5,15 +5,14 @@
 #ifndef FlowerPlatformArduinoRuntime_h
 #define FlowerPlatformArduinoRuntime_h
 
-#include <avr/pgmspace.h>
 #include <Arduino.h>
 #include <Print.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 
-//#include <FlowerPlatformStringManip.h>
+#ifdef ESP8266
+#define PSTR(X) X
+#define strcmp_P(str1, st2P) strcmp(str1, st2P)
+#endif
+
 
 #ifdef ESP8266
 extern "C" {

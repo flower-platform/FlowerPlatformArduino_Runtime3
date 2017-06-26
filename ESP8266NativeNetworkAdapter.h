@@ -9,9 +9,6 @@
 #include <ESP8266WiFi.h>
 #include <IPAddress.h>
 #include <IProtocolHandler.h>
-#include <WiFi.h>
-#include <WiFiClient.h>
-#include <WiFiServer.h>
 
 class ESP8266NativeNetworkAdapter : public INetworkAdapter {
 protected:

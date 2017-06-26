@@ -6,12 +6,11 @@
 #ifndef REMOTEOBJECTHUBCONNECTION_H_
 #define REMOTEOBJECTHUBCONNECTION_H_
 
-#include <Arduino.h>
 #include <FlowerPlatformArduinoRuntime.h>
 #include <HardwareSerial.h>
 #include <NetworkConnection.h>
 #include <RemoteObject.h>
-#include <RemoteObjectUtils.h>
+#include <RemoteObjectProtocol.h>
 
 class RemoteObjectHubConnection {
 public:
@@ -59,9 +58,9 @@ bool RemoteObjectHubConnection::processCommand() {
 	}
 
 	size_t size = 0;
-	char cmd = fprp_readCommand(connection->in, securityToken);
-	if ((int) cmd < 0) {
-		Serial.print("Error reading command: "); Serial.println((int) cmd);
+	int cmd = fprp_readCommand(connection->in, securityToken);
+	if (cmd < 0) {
+		Serial.print("Error reading command: "); Serial.println(cmd);
 		registered = false;
 		return false;
 	}
@@ -90,9 +89,9 @@ bool RemoteObjectHubConnection::processCommand() {
 		// start HTTP request; send headers
 		connection->startHttpRequest("/hub", FPRP_FIXED_PACKET_SIZE + tbuf.getSize());
 		// send response packet
-		fprp_startCommand(connection->out, 'R', securityToken); // command = RESULT
+		fprp_startPacket(connection->out, 'R', securityToken); // command = RESULT
 		tbuf.flush();
-		fprp_endCommand(connection->out);
+		fprp_endPacket(connection->out);
 		connection->flush();
 		return true; }
 	case 'R': { // result
@@ -117,9 +116,9 @@ void RemoteObjectHubConnection::registerToHub() {
 	write_P(&buf, localRappInstanceName); buf.print(TERM);
 	buf.print(localServerPort);	buf.print(TERM);
 	connection->startHttpRequest("/hub", FPRP_FIXED_PACKET_SIZE + buf.getSize());
-	fprp_startCommand(connection->out, 'A', securityToken); // register
+	fprp_startPacket(connection->out, 'A', securityToken); // register
 	buf.flush();
-	fprp_endCommand(connection->out);
+	fprp_endPacket(connection->out);
 	connection->flush();
 	processCommand();
 	registered = true;
@@ -141,15 +140,15 @@ void RemoteObjectHubConnection::loop() {
 
 	// get pending invocations
 	connection->startHttpRequest("/hub", FPRP_FIXED_PACKET_SIZE);
-	fprp_startCommand(connection->out, 'J', securityToken);
-	fprp_endCommand(connection->out);
+	fprp_startPacket(connection->out, 'J', securityToken);
+	fprp_endPacket(connection->out);
 	connection->flush();
 	while(processCommand());
 
 	// get pending responses
 	connection->startHttpRequest("/hub", FPRP_FIXED_PACKET_SIZE);
-	fprp_startCommand(connection->out, 'S', securityToken);
-	fprp_endCommand(connection->out);
+	fprp_startPacket(connection->out, 'S', securityToken);
+	fprp_endPacket(connection->out);
 	connection->flush();
 	while(processCommand());
 

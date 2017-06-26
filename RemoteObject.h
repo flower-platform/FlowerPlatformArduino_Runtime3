@@ -9,10 +9,11 @@
 #include <FlowerPlatformArduinoRuntime.h>
 #include <HardwareSerial.h>
 #include <NetworkConnection.h>
-#include <RemoteObjectUtils.h>
+#include <RemoteObjectProtocol.h>
 #include <Stream.h>
 
 #define MAX_CALLBACKS 4
+
 #define TYPE_VOID 0
 #define TYPE_STRING 1
 #define TYPE_INT 2
@@ -20,10 +21,10 @@
 
 #define RECV_BUFFER_SIZE 128
 
-extern void registerCallback(uint16_t callbackId, void* callback, uint8_t returnTypeId);
-extern uint16_t executeCallback(uint16_t callbackId, Stream *response);
-extern uint16_t executeCallback(void* callback, uint8_t returnType, Stream *response);
 extern void dispatchFunctionCall(const char* functionCall, Print* response);
+extern void registerCallback(uint16_t callbackId, void* callback, uint8_t returnTypeId);
+extern bool executeCallback(uint16_t callbackId, Stream *response);
+extern bool executeCallback(void* callback, uint8_t returnType, Stream *response);
 
 class RemoteObject {
 public:
@@ -57,7 +58,6 @@ bool RemoteObject::callFunction(const char* functionNamePSTR, BufferedPrint<>* a
 	}
 
 	BufferedPrint<64> buf(connection->out);
-//	buf.print('0'); buf.print(TERM); // hasNext = false
 	if (rappInstance) {
 		write_P(&buf, rappInstance);
 	}
@@ -71,7 +71,7 @@ bool RemoteObject::callFunction(const char* functionNamePSTR, BufferedPrint<>* a
 		contentLength += argsBuf->getSize();
 	}
 	connection->startHttpRequest(rappInstance ? "/hub" : "/remoteObject", contentLength);
-	fprp_startCommand(connection->out, 'I', securityToken);
+	fprp_startPacket(connection->out, 'I', securityToken);
 	buf.flush();
 	if (argsBuf) {
 		argsBuf->out = connection->out;
@@ -86,16 +86,15 @@ bool RemoteObject::callFunction(const char* functionNamePSTR, BufferedPrint<>* a
 	if (!connection->in->find((char*) "\r\n\r\n")) {
 		return false;
 	}
-	char cmd = fprp_readCommand(connection->in, securityToken);
-	if ((int) cmd < 0) {
-		Serial.print("Error reading command: "); Serial.println((int) cmd);
+	int cmd = fprp_readCommand(connection->in, securityToken);
+	if (cmd < 0) {
+		Serial.print("Error reading command: "); Serial.println(cmd);
 		connection->disconnect();
 		return false;
 	}
 
 	switch(cmd) {
 	case 'R': // result
-//		connection->in->find(TERM); // hasNext (ignored)
 		connection->in->find(TERM); // callbackId (ignored)
 		executeCallback(callback, returnTypeId, connection->in);
 		break;
@@ -108,67 +107,6 @@ bool RemoteObject::callFunction(const char* functionNamePSTR, BufferedPrint<>* a
 	}
 
 	connection->disconnect();
-	return true;
-}
-
-/***************************************** RemoteObjectServer ********************************************************/
-
-class RemoteObjectServer {
-public:
-
-	RemoteObjectServer(const char* securityTokenPSTR) {
-		this->securityToken = securityTokenPSTR;
-	}
-
-	bool processCommand(Stream* in, Print* out);
-
-protected:
-
-	const char* securityToken;
-
-};
-
-bool RemoteObjectServer::processCommand(Stream* in, Print* out) {
-	char cmd = fprp_readCommand(in, securityToken);
-	if ((int) cmd < 0) {
-		Serial.print("Error reading command: "); Serial.println((int) cmd);
-		return false;
-	}
-
-	size_t size = 0;
-	switch (cmd) {
-	case 'I': // INVOKE
-		// ---------- read request ------------
-		char rbuf[RECV_BUFFER_SIZE];
-//		size = in->readBytesUntil(TERM, rbuf, RECV_BUFFER_SIZE); // hasNext (ignored)
-		in->readBytesUntil(TERM, rbuf, RECV_BUFFER_SIZE); // rappInstanceId (ignored)
-		size = in->readBytesUntil(TERM, rbuf, RECV_BUFFER_SIZE); // callbackId
-		char callbackIdStr[size + 1];
-		strncpy(callbackIdStr, rbuf, size);
-		callbackIdStr[size] = TERM;
-		size = in->readBytesUntil(EOT, rbuf, RECV_BUFFER_SIZE); // function call
-		rbuf[size] = TERM;
-
-		// send initial headers
-		write_P(out, PSTR("HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n")); // HTTP headers
-
-		//buffer command specific packet fields and response
-		BufferedPrint<64> tbuf(out);
-//		tbuf.print('0'); tbuf.print(TERM); // hasNext = false
-		tbuf.print(callbackIdStr); tbuf.print(TERM); // callbackId
-		dispatchFunctionCall(rbuf, &tbuf);
-
-		// send content length; end headers
-		write_P(out, PSTR("Content-Length: ")); out->println(FPRP_FIXED_PACKET_SIZE + tbuf.getSize());
-		out->println();
-
-		// send response packet
-		fprp_startCommand(out, 'R', securityToken); // command = RESULT
-		tbuf.flush();
-		fprp_endCommand(out);
-
-		break;
-	}
 	return true;
 }
 

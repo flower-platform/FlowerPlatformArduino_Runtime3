@@ -8,7 +8,7 @@
 #include <IProtocolHandler.h>
 #include <INetworkAdapter.h>
 #include <SPI.h>
-#include <WiFi101.h>
+//#include <WiFi101.h>
 
 class WiFi101NetworkAdapter : public INetworkAdapter {
 protected:
