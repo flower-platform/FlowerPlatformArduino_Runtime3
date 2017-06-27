@@ -19,8 +19,8 @@ int fprp_readCommand(Stream* in, const char* securityTokenPSTR) {
 	char buf[maxSize];
 	size_t size = 0;
 
-	size = in->readBytesUntil('\0', buf, maxSize); // FP header
-	if (strncmp_P(buf, PSTR(FPRP_HEADER), size) != 0) {
+	size = in->readBytesUntil('\0', buf, maxSize); buf[size] = '\0'; // FP header
+	if (strcmp_P(buf, PSTR(FPRP_HEADER)) != 0) {
 		// error: invalid protocol header
 		return -11;
 	}
@@ -31,8 +31,8 @@ int fprp_readCommand(Stream* in, const char* securityTokenPSTR) {
 		return -12;
 	}
 
-	size = in->readBytesUntil('\0', buf, maxSize); // security token
-	if (strncmp_P(buf, securityTokenPSTR, size) != 0) {
+	size = in->readBytesUntil('\0', buf, maxSize); buf[size] = '\0'; // security token
+	if (strcmp_P(buf, securityTokenPSTR) != 0) {
 		// error: invalid security token
 		return -13;
 	}

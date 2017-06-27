@@ -45,8 +45,8 @@ bool RemoteObjectProcessor::processCommand(Stream* in, Print* out) {
 	char rbuf[RECV_BUFFER_SIZE];
 
 	// read target node id
-	size = in->readBytesUntil(TERM, rbuf, RECV_BUFFER_SIZE); // target node id
-	if (nodeIdPSTR != NULL && strncmp_P(rbuf, nodeIdPSTR, size) != 0) { // not our packet
+	size = in->readBytesUntil(TERM, rbuf, RECV_BUFFER_SIZE); rbuf[size] = '\0'; // target node id (rappInstanceId)
+	if (nodeIdPSTR != NULL && strcmp_P(rbuf, nodeIdPSTR) != 0) { // not our packet
 		return false;
 	}
 
@@ -61,7 +61,6 @@ bool RemoteObjectProcessor::processCommand(Stream* in, Print* out) {
 
 		//buffer return value
 		BufferedPrint<64> tbuf(out);
-//		tbuf.print("asdasd");
 		dispatchFunctionCall(rbuf, &tbuf);
 
 		// send response packet
