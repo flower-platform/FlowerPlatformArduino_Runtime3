@@ -20,7 +20,7 @@
 #define TYPE_BOOL 3
 
 #ifdef ESP8266
-#define RECV_BUFFER_SIZE 2176
+#define RECV_BUFFER_SIZE 2944
 #else
 #define RECV_BUFFER_SIZE 128
 #endif
