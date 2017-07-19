@@ -6,7 +6,6 @@
 #ifndef ETHERNETNETWORKCONNECTION_H_
 #define ETHERNETNETWORKCONNECTION_H_
 
-#include <avr/pgmspace.h>
 #include <Arduino.h>
 #include <EthernetClient.h>
 #include <FlowerPlatformArduinoRuntime.h>

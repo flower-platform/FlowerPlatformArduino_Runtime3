@@ -6,9 +6,11 @@
 #ifndef REMOTEOBJECTPROCESSOR_H_
 #define REMOTEOBJECTPROCESSOR_H_
 
+#include <BufferedPrint.h>
 #include <FlowerPlatformArduinoRuntime.h>
 #include <RemoteObject.h>
 #include <RemoteObjectProtocol.h>
+#include <Stream.h>
 
 class RemoteObjectProcessor {
 public:
@@ -38,11 +40,11 @@ protected:
 
 bool RemoteObjectProcessor::processCommand(Stream* in, Print* out) {
 	int cmd = fprp_readCommand(in, securityTokenPSTR);
-	if (cmd < 0) {
+	if (cmd < 0 || cmd != 'I') {
 		return false;
 	}
 	size_t size = 0;
-	char rbuf[RECV_BUFFER_SIZE];
+	char *rbuf = new char[RECV_BUFFER_SIZE];
 
 	// read target node id
 	size = in->readBytesUntil(TERM, rbuf, RECV_BUFFER_SIZE); rbuf[size] = '\0'; // target node id (rappInstanceId)
@@ -50,26 +52,34 @@ bool RemoteObjectProcessor::processCommand(Stream* in, Print* out) {
 		return false;
 	}
 
-	switch (cmd) {
-	case 'I': // INVOKE
-		size = in->readBytesUntil(TERM, rbuf, RECV_BUFFER_SIZE); // callbackId
-		char callbackIdStr[size + 1];
-		strncpy(callbackIdStr, rbuf, size);
-		callbackIdStr[size] = TERM;
-		size = in->readBytesUntil(EOT, rbuf, RECV_BUFFER_SIZE); // function call
-		rbuf[size] = TERM;
+	size = in->readBytesUntil(TERM, rbuf, RECV_BUFFER_SIZE); // callbackId
+	char callbackIdStr[size + 1];
+	strncpy(callbackIdStr, rbuf, size);
+	callbackIdStr[size] = TERM;
+	size = in->readBytesUntil(EOT, rbuf, RECV_BUFFER_SIZE); // function call
+	rbuf[size] = TERM;
 
-		//buffer return value
-		BufferedPrint<64> tbuf(out);
-		dispatchFunctionCall(rbuf, &tbuf);
+	//buffer return value
+	uint8_t *resultBuf = new uint8_t[SEND_BUFFER_SIZE];
+	BufferedPrint<0> resultPrint(out, resultBuf, SEND_BUFFER_SIZE);
+	bool ok = dispatchFunctionCall(rbuf, &resultPrint);
 
-		// send response packet
-		sendPacketHeader(out, 'R', securityTokenPSTR, tbuf.getSize());
+	Serial.println("Sending response");
+	if (ok) {
+		// send result
+		sendPacketHeader(out, 'R', securityTokenPSTR, strlen(callbackIdStr) + 1 + resultPrint.getSize());
 		out->print(callbackIdStr); out->print(TERM); // callbackId
-		tbuf.flush();
+		resultPrint.flush();
 		endPacket(out);
-		break;
+	} else {
+		//send error
+		sendPacketHeader(out, 'X', securityTokenPSTR, 0);
+		endPacket(out);
 	}
+
+	delete resultBuf;
+	delete rbuf;
+
 	return true;
 }
 

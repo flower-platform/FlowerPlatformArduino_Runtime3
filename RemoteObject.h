@@ -20,12 +20,14 @@
 #define TYPE_BOOL 3
 
 #ifdef ESP8266
-#define RECV_BUFFER_SIZE 2944
+#define RECV_BUFFER_SIZE 6210
+#define SEND_BUFFER_SIZE 2048
 #else
 #define RECV_BUFFER_SIZE 128
+#define SEND_BUFFER_SIZE 64
 #endif
 
-extern void dispatchFunctionCall(char* functionCall, Print* response);
+extern bool dispatchFunctionCall(char* functionCall, Print* response);
 extern void registerCallback(uint16_t callbackId, void* callback, uint8_t returnTypeId);
 extern bool executeCallback(uint16_t callbackId, Stream *response);
 extern bool executeCallback(void* callback, uint8_t returnType, Stream *response);

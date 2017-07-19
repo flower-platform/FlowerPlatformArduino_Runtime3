@@ -7,6 +7,7 @@
 
 #include <Arduino.h>
 #include <Print.h>
+#include <stddef.h>
 
 #ifdef ESP8266
 #define PSTR(X) X
@@ -161,83 +162,6 @@ void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) 
     }
 }
 
-template <size_t BUFFER_SIZE = 64>
-class BufferedPrint : public Print {
-private:
-
-    uint8_t buf[BUFFER_SIZE];
-
-    size_t bufIndex = 0;
-
-    size_t write(const uint8_t* buffer, size_t size, bool isProgMem);
-
-public:
-
-    Print* out;
-
-    BufferedPrint() {
-    	this->out = NULL;
-    };
-
-	BufferedPrint(Print* print) {
-		this->out = print;
-	}
-
-	size_t write(uint8_t b) {
-		return write(&b, 1, false);
-	}
-
-	size_t write(const uint8_t* buffer, size_t size) {
-		return write(buffer, size, false);
-	}
-
-	size_t write_P(const char* s);
-
-	size_t write_P(const uint8_t* buffer, size_t size) {
-		return write(buffer, size, true);
-	}
-
-	size_t getSize() {
-		return bufIndex;
-	}
-
-    void flush();
-
-    virtual ~BufferedPrint() { }
-
-};
-
-template <size_t BUFFER_SIZE> size_t BufferedPrint<BUFFER_SIZE>::write_P(const char* s) {
-	return write((uint8_t*) s, strlen_P(s), true);
-}
-
-template <size_t BUFFER_SIZE> size_t BufferedPrint<BUFFER_SIZE>::write(const uint8_t* buffer, size_t size, bool isProgMem) {
-	size_t n = size;
-	size_t writableBytes;
-	do {
-		writableBytes = bufIndex + n > BUFFER_SIZE ? BUFFER_SIZE - bufIndex : n;
-		if (isProgMem) {
-    		memcpy_P(buf + bufIndex, buffer, writableBytes);
-		} else {
-    		memcpy(buf + bufIndex, buffer, writableBytes);
-		}
-		bufIndex += writableBytes;
-		buffer += writableBytes;
-		n -= writableBytes;
-		if (bufIndex == BUFFER_SIZE) {
-			flush();
-		}
-	} while (n > 0);
-	return size;
-}
-
-template <size_t BUFFER_SIZE> void BufferedPrint<BUFFER_SIZE>::flush() {
-	if (bufIndex == 0) {
-		return;
-	}
-	out->write(buf, bufIndex);
-	bufIndex = 0;
-}
 
 uint8_t b64_lookup(char c) {
 	if (c >= 'A' && c <= 'Z')
