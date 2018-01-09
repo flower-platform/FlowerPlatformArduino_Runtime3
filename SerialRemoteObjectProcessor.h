@@ -22,7 +22,7 @@ public:
 	}
 
 	void sendPacketHeader(Print* out, char command, const char* securityTokenPSTR, size_t payloadSize) {
-		int size = FPRP_FIXED_PACKET_SIZE + payloadSize;
+		int size = FPRP_PACKET_OVERHEAD_SIZE + payloadSize;
 
 		delay(50);
 		rs485->setBatchWriteMode(true);

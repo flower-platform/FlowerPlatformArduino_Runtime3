@@ -32,8 +32,8 @@ uint32_t _SPIFFS_PHYS_ADDR = (uint32_t) &_SPIFFS_start - 0x40200000;
 
 class ESP8266ArduinoISP {
 protected:
-	int resetPin = D1;
-	int resetActiveHigh = false;
+	int resetPin;
+	int resetActiveHigh;
 	int spiFrequency = 300e3;
 
 	bool initialized = false;
@@ -246,7 +246,9 @@ protected:
 
 public:
 
-	ESP8266ArduinoISP() {
+	ESP8266ArduinoISP(uint8_t resetPin, bool resetActiveHigh = false) {
+		this->resetPin = resetPin;
+		this->resetActiveHigh = resetActiveHigh;
 		pinMode(resetPin, OUTPUT);
 		digitalWrite(resetPin, !resetActiveHigh);
 	}
@@ -262,6 +264,9 @@ public:
 		lastSpiFlashAddress = -1;
 		chunkIndex = -1;
 		initialized = syncAndInit();
+		if (!initialized) {
+			stop();
+		}
 		return initialized;
 	}
 

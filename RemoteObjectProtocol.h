@@ -12,7 +12,7 @@
 #define TERM '\0'
 #define EOT '\4'
 #define FPRP_HEADER "FPRP"
-#define FPRP_FIXED_PACKET_SIZE 19
+#define FPRP_PACKET_OVERHEAD_SIZE 19
 
 int fprp_readCommand(Stream* in, const char* securityTokenPSTR) {
 	size_t maxSize = strlen_P(securityTokenPSTR) + 4;

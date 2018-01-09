@@ -1,0 +1,81 @@
+#ifndef SPIREMOTEOBJECT_H_
+#define SPIREMOTEOBJECT_H_
+
+#include <Arduino.h>
+#include <RemoteObject.h>
+#include <RemoteObjectProtocol.h>
+#include <SmartBuffer.h>
+#include <SPI.h>
+
+#define ENQ '\5'
+#define NAK '\21'
+
+class SPIRemoteObject: public RemoteObject {
+public:
+
+	SPIRemoteObject(const char* rappInstancePSTR, const char* instanceNamePSTR,
+			const char* securityTokenPSTR, uint8_t slaveSelectPin) :
+			RemoteObject(rappInstancePSTR, instanceNamePSTR, securityTokenPSTR) {
+		this->slaveSelectPin = slaveSelectPin;
+		pinMode(slaveSelectPin, OUTPUT);
+		digitalWrite(slaveSelectPin, HIGH);
+	}
+
+	Stream* sendRequest(SmartBuffer<DEFAULT_BUFFER_SIZE>* buf, SmartBuffer<>* argsBuf);
+
+protected:
+
+	uint8_t slaveSelectPin;
+
+};
+
+Stream* SPIRemoteObject::sendRequest(SmartBuffer<DEFAULT_BUFFER_SIZE>* buf, SmartBuffer<>* argsBuf) {
+	// enable slave
+	digitalWrite(slaveSelectPin, LOW);
+
+	// send payload
+	while (buf->available()) {
+		uint8_t c = buf->read();
+		SPI.transfer(c);
+	}
+	if (argsBuf) {
+		while (argsBuf->available()) {
+			uint8_t c = argsBuf->read();
+			SPI.transfer(c);
+		}
+	}
+
+	uint8_t c;
+	long t = millis();
+
+	// keep querying slave
+//	Serial.println("Querying...");
+	delay(25);
+	c = SPI.transfer(ENQ); // response for last (EOT) byte; must be NAK
+	while ((c = SPI.transfer(ENQ)) == NAK && millis() - t < 1000) {
+		delay(25);
+	}
+	if (c == NAK) {
+		return NULL;
+	}
+
+	// read response
+//	Serial.println("Reading response");
+	buf->clear();
+	buf->write(c);
+	t = millis();
+	do {
+		c = SPI.transfer(ENQ);
+		buf->write(c);
+	} while (c != EOT && millis() - t < 1000);
+
+	digitalWrite(slaveSelectPin, HIGH);
+
+//	for (int i = 0; i < buf->available(); i++) {
+//		Serial.print((char) (buf->getBuffer()[i]));
+//	}
+
+	return buf;
+}
+
+#endif /* SPIREMOTEOBJECT_H_ */

@@ -6,17 +6,13 @@
 #ifndef SMARTBUFFER_H_
 #define SMARTBUFFER_H_
 
-#include <pgmspace.h>
-#include <stddef.h>
 #include <Stream.h>
-#include <cstdint>
-#include <cstring>
 
-template <size_t BUFFER_SIZE = 64>
+template <size_t BUFFER_CAPACITY = 64>
 class SmartBuffer : public Stream {
 private:
 
-    uint8_t buf[BUFFER_SIZE];
+    uint8_t buf[BUFFER_CAPACITY];
 
     size_t bufTail = 0;
 
@@ -36,7 +32,21 @@ public:
 		this->out = print;
 	}
 
+	uint8_t* getBuffer() {
+		return buf;
+	}
+
+	void setSize(size_t n) {
+		bufTail = n;
+	}
+
+	size_t capacity() {
+		return BUFFER_CAPACITY;
+	}
+
     virtual ~SmartBuffer() { }
+
+    void clear();
 
     /******************************* Print methods *********************************/
 
@@ -70,11 +80,11 @@ public:
 
 };
 
-template <size_t BUFFER_SIZE> size_t SmartBuffer<BUFFER_SIZE>::write(const uint8_t* buffer, size_t size, bool isProgMem) {
+template <size_t BUFFER_CAPACITY> size_t SmartBuffer<BUFFER_CAPACITY>::write(const uint8_t* buffer, size_t size, bool isProgMem) {
 	size_t n = size;
 	size_t writableBytes;
 	do {
-		writableBytes = bufTail + n > BUFFER_SIZE ? BUFFER_SIZE - bufTail : n;
+		writableBytes = bufTail + n > BUFFER_CAPACITY ? BUFFER_CAPACITY - bufTail : n;
 		if (isProgMem) {
     		memcpy_P(buf + bufTail, buffer, writableBytes);
 		} else {
@@ -83,7 +93,7 @@ template <size_t BUFFER_SIZE> size_t SmartBuffer<BUFFER_SIZE>::write(const uint8
 		bufTail += writableBytes;
 		buffer += writableBytes;
 		n -= writableBytes;
-		if (bufTail == BUFFER_SIZE) {
+		if (bufTail == BUFFER_CAPACITY) {
 			if (out != NULL) {
 				flush(out);
 			} else {
@@ -94,11 +104,11 @@ template <size_t BUFFER_SIZE> size_t SmartBuffer<BUFFER_SIZE>::write(const uint8
 	return size;
 }
 
-template <size_t BUFFER_SIZE> size_t SmartBuffer<BUFFER_SIZE>::write_P(const char* s) {
+template <size_t BUFFER_CAPACITY> size_t SmartBuffer<BUFFER_CAPACITY>::write_P(const char* s) {
 	return write((uint8_t*) s, strlen_P(s), true);
 }
 
-template <size_t BUFFER_SIZE> void SmartBuffer<BUFFER_SIZE>::flush(Print* out) {
+template <size_t BUFFER_CAPACITY> void SmartBuffer<BUFFER_CAPACITY>::flush(Print* out) {
 	if (bufTail == 0 || out == NULL) {
 		return;
 	}
@@ -107,15 +117,20 @@ template <size_t BUFFER_SIZE> void SmartBuffer<BUFFER_SIZE>::flush(Print* out) {
 	bufHead = 0;
 }
 
-template <size_t BUFFER_SIZE> int SmartBuffer<BUFFER_SIZE>::available() {
+template <size_t BUFFER_CAPACITY> void SmartBuffer<BUFFER_CAPACITY>::clear() {
+	bufTail = 0;
+	bufHead = 0;
+}
+
+template <size_t BUFFER_CAPACITY> int SmartBuffer<BUFFER_CAPACITY>::available() {
 	return bufTail - bufHead;
 }
 
-template <size_t BUFFER_SIZE> int SmartBuffer<BUFFER_SIZE>::read() {
+template <size_t BUFFER_CAPACITY> int SmartBuffer<BUFFER_CAPACITY>::read() {
 	return bufTail > bufHead ? buf[bufHead++] : -1;
 }
 
-template <size_t BUFFER_SIZE> int SmartBuffer<BUFFER_SIZE>::peek() {
+template <size_t BUFFER_CAPACITY> int SmartBuffer<BUFFER_CAPACITY>::peek() {
 	return bufTail > bufHead ? buf[bufHead] : -1;
 }
 

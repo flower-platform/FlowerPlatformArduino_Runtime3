@@ -12,6 +12,14 @@
 #include <RemoteObject.h>
 #include <RemoteObjectProtocol.h>
 
+#ifdef ESP8266
+#define RECV_BUFFER_SIZE 6210
+#define SEND_BUFFER_SIZE 2048
+#else
+#define RECV_BUFFER_SIZE 128
+#define SEND_BUFFER_SIZE 64
+#endif
+
 class RemoteObjectHubConnection {
 public:
 
@@ -87,7 +95,7 @@ bool RemoteObjectHubConnection::processCommand() {
 		dispatchFunctionCall(rbuf, &tbuf);
 
 		// start HTTP request; send headers
-		connection->startHttpRequest("/hub", FPRP_FIXED_PACKET_SIZE + tbuf.getSize());
+		connection->startHttpRequest("/hub", FPRP_PACKET_OVERHEAD_SIZE + tbuf.getSize());
 		// send response packet
 		fprp_startPacket(connection->out, 'R', securityToken); // command = RESULT
 		tbuf.flush();
@@ -115,7 +123,7 @@ void RemoteObjectHubConnection::registerToHub() {
 	BufferedPrint<32> buf(connection->out);
 	write_P(&buf, localRappInstanceName); buf.print(TERM);
 	buf.print(localServerPort);	buf.print(TERM);
-	connection->startHttpRequest("/hub", FPRP_FIXED_PACKET_SIZE + buf.getSize());
+	connection->startHttpRequest("/hub", FPRP_PACKET_OVERHEAD_SIZE + buf.getSize());
 	fprp_startPacket(connection->out, 'A', securityToken); // register
 	buf.flush();
 	fprp_endPacket(connection->out);
@@ -139,14 +147,14 @@ void RemoteObjectHubConnection::loop() {
 	}
 
 	// get pending invocations
-	connection->startHttpRequest("/hub", FPRP_FIXED_PACKET_SIZE);
+	connection->startHttpRequest("/hub", FPRP_PACKET_OVERHEAD_SIZE);
 	fprp_startPacket(connection->out, 'J', securityToken);
 	fprp_endPacket(connection->out);
 	connection->flush();
 	while(processCommand());
 
 	// get pending responses
-	connection->startHttpRequest("/hub", FPRP_FIXED_PACKET_SIZE);
+	connection->startHttpRequest("/hub", FPRP_PACKET_OVERHEAD_SIZE);
 	fprp_startPacket(connection->out, 'S', securityToken);
 	fprp_endPacket(connection->out);
 	connection->flush();

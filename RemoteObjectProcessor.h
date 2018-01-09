@@ -12,6 +12,16 @@
 #include <RemoteObjectProtocol.h>
 #include <Stream.h>
 
+
+#ifdef ESP8266
+#define RECV_BUFFER_SIZE 6210
+#define SEND_BUFFER_SIZE 2048
+#else
+#define RECV_BUFFER_SIZE 128
+#define SEND_BUFFER_SIZE 64
+#endif
+
+
 class RemoteObjectProcessor {
 public:
 
@@ -24,9 +34,9 @@ public:
 
 	bool processCommand(Stream* in, Print* out);
 
-	virtual void sendPacketHeader(Print* out, char command, const char* securityTokenPSTR, size_t payloadSize) = 0;
+	virtual void sendPacketHeader(Print* out, char command, const char* securityTokenPSTR, size_t payloadSize);
 
-	virtual void endPacket(Print* out) = 0;
+	virtual void endPacket(Print* out);
 
 	virtual void loop() = 0;
 
@@ -37,6 +47,17 @@ protected:
 	const char* nodeIdPSTR;
 
 };
+
+void RemoteObjectProcessor::sendPacketHeader(Print* out, char command, const char* securityTokenPSTR, size_t payloadSize) {
+	// default implementateion
+	fprp_startPacket(out, command, securityTokenPSTR);
+}
+
+void RemoteObjectProcessor::endPacket(Print* out) {
+	// default implementateion
+	fprp_endPacket(out);
+}
+
 
 bool RemoteObjectProcessor::processCommand(Stream* in, Print* out) {
 	int cmd = fprp_readCommand(in, securityTokenPSTR);
