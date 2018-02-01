@@ -20,7 +20,7 @@ public:
 
 	virtual void sendPacketHeader(Print* out, char command, const char* securityTokenPSTR, size_t payloadSize);
 
-	void processClient(Client *client);
+	bool processClient(Client *client);
 
 };
 
@@ -35,23 +35,24 @@ void HttpRemoteObjectProcessor::sendPacketHeader(Print* out, char command, const
 	fprp_startPacket(out, command, securityTokenPSTR); // command = RESULT
 }
 
-void HttpRemoteObjectProcessor::processClient(Client *client) {
+bool HttpRemoteObjectProcessor::processClient(Client *client) {
 	Serial.println("processing client");
 
 	// skip http headers
 	if (!client->find((char*) "\r\n\r\n")) {
 		// http headers not found or incomplete
 		client->stop();
-		return;
+		return false;
 	}
 
 	if (!processCommand(client, client)) {
 		client->stop();
-		return;
+		return false;
 	}
 	client->flush();
 	delay(100);
 	client->stop();
+	return true;
 }
 
 #endif /* HTTPREMOTEOBJECTPROCESSOR_H_ */

@@ -52,14 +52,16 @@ public:
 		SPI.attachInterrupt();
 	}
 
-	void loop() {
+	bool loop() {
 		if (processSpiCommand) {
-			Serial.println("\nloop Processing");
+//			Serial.println("\nloop Processing");
 			spiResponseBuffer.clear();
-			processCommand(&spiBuffer, &spiResponseBuffer);
+			bool res = processCommand(&spiBuffer, &spiResponseBuffer);
 			spiBuffer.clear();
 			processSpiCommand = false;
+			return res;
 		}
+		return false;
 	}
 
 };

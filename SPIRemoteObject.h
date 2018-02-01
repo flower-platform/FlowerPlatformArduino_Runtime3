@@ -49,11 +49,12 @@ Stream* SPIRemoteObject::sendRequest(SmartBuffer<DEFAULT_BUFFER_SIZE>* buf, Smar
 	long t = millis();
 
 	// keep querying slave
+	delay(5);
 //	Serial.println("Querying...");
-	delay(25);
 	c = SPI.transfer(ENQ); // response for last (EOT) byte; must be NAK
 	while ((c = SPI.transfer(ENQ)) == NAK && millis() - t < 1000) {
-		delay(25);
+//		Serial.println("waiting...");
+		delay(5);
 	}
 	if (c == NAK) {
 		return NULL;

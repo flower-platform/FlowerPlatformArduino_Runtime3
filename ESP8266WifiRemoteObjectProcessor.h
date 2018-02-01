@@ -16,7 +16,7 @@ public:
 
 	void sendPacketHeader(Print* out, char command, const char* securityTokenPSTR, size_t payloadSize);
 
-	void loop();
+	bool loop();
 
 protected:
 
@@ -29,11 +29,12 @@ ESP8266WiFiRemoteObjectProcessor::ESP8266WiFiRemoteObjectProcessor(int port, con
 	server->begin();
 }
 
-void ESP8266WiFiRemoteObjectProcessor::loop() {
+bool ESP8266WiFiRemoteObjectProcessor::loop() {
 	WiFiClient client = server->available();
 	if (client) {
-		HttpRemoteObjectProcessor::processClient(&client);
+		return HttpRemoteObjectProcessor::processClient(&client);
 	}
+	return false;
 }
 
 void ESP8266WiFiRemoteObjectProcessor::sendPacketHeader(Print* out, char command, const char* securityTokenPSTR, size_t payloadSize) {

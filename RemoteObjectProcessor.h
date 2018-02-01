@@ -7,7 +7,6 @@
 #define REMOTEOBJECTPROCESSOR_H_
 
 #include <BufferedPrint.h>
-#include <FlowerPlatformArduinoRuntime.h>
 #include <RemoteObject.h>
 #include <RemoteObjectProtocol.h>
 #include <Stream.h>
@@ -38,7 +37,7 @@ public:
 
 	virtual void endPacket(Print* out);
 
-	virtual void loop() = 0;
+	virtual bool loop() = 0;
 
 protected:
 
@@ -85,7 +84,7 @@ bool RemoteObjectProcessor::processCommand(Stream* in, Print* out) {
 	BufferedPrint<0> resultPrint(out, resultBuf, SEND_BUFFER_SIZE);
 	bool ok = dispatchFunctionCall(rbuf, &resultPrint);
 
-	Serial.println("Sending response");
+//	Serial.println("Sending response");
 	if (ok) {
 		// send result
 		sendPacketHeader(out, 'R', securityTokenPSTR, strlen(callbackIdStr) + 1 + resultPrint.getSize());

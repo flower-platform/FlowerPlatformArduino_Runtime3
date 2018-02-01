@@ -9,7 +9,6 @@
 #include <Arduino.h>
 #include <stddef.h>
 #include <Stream.h>
-#include <cstdint>
 
 class RS485Serial: public Stream {
 private:
@@ -19,11 +18,13 @@ private:
 
 public:
 
-	RS485Serial(Stream &serial, uint8_t writeEnablePin) {
-		this->serial = &serial;
+	RS485Serial(Stream* serial, uint8_t writeEnablePin = 255) {
+		this->serial = serial;
 		this->writeEnablePin = writeEnablePin;
-		pinMode(writeEnablePin, OUTPUT);
-		digitalWrite(writeEnablePin, LOW);
+		if (writeEnablePin != 255) {
+			pinMode(writeEnablePin, OUTPUT);
+			digitalWrite(writeEnablePin, LOW);
+		}
 	}
 
 	virtual ~RS485Serial() { }
@@ -47,11 +48,15 @@ public:
 void RS485Serial::setBatchWriteMode(bool batchWriteMode) {
 	this->batchWriteMode = batchWriteMode;
  	if (batchWriteMode) {
-     	digitalWrite(writeEnablePin, HIGH);
+ 		if (writeEnablePin != 255) {
+ 			digitalWrite(writeEnablePin, HIGH);
+ 		}
  	} else {
 		serial->flush();
 		delay(1);
-		digitalWrite(writeEnablePin, LOW);
+ 		if (writeEnablePin != 255) {
+ 			digitalWrite(writeEnablePin, LOW);
+ 		}
  	}
 }
 

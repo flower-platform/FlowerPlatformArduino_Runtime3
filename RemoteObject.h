@@ -24,7 +24,7 @@
 extern bool dispatchFunctionCall(char* functionCall, Print* response);
 extern void registerCallback(uint16_t callbackId, void* callback, uint8_t returnTypeId);
 extern bool executeCallback(uint16_t callbackId, Stream *response);
-extern bool executeCallback(void* callback, uint8_t returnType, Stream *response);
+bool executeCallback(void* callback, uint8_t returnType, Stream *response);
 
 class RemoteObject {
 public:
@@ -51,7 +51,7 @@ protected:
 
 };
 
-bool RemoteObject::callFunction(const char* functionNamePSTR, SmartBuffer<>* argsBuf, void *callback, uint8_t returnTypeId) {
+bool RemoteObject::callFunction(const char* functionNamePSTR, SmartBuffer<>* argsBuf, void *callback = NULL, uint8_t returnTypeId = TYPE_VOID) {
 	SmartBuffer<DEFAULT_BUFFER_SIZE> buf;
 	fprp_startPacket(&buf, 'I', securityToken);
 	if (rappInstance) {
@@ -82,6 +82,11 @@ bool RemoteObject::callFunction(const char* functionNamePSTR, SmartBuffer<>* arg
 		Serial.print("Error reading command: "); Serial.println(cmd);
 		return false;
 	}
+
+	if (callback == NULL) {
+		return true;
+	}
+
 	char callbackIdStr[8];
 	switch(cmd) {
 	case 'R': // result
@@ -95,6 +100,36 @@ bool RemoteObject::callFunction(const char* functionNamePSTR, SmartBuffer<>* arg
 		break;
 	}
 
+	return true;
+}
+
+bool executeCallback(void* callback, uint8_t returnType, Stream *response) {
+	int size;
+	switch (returnType) {
+	case TYPE_VOID:
+		((void (*)()) callback)();
+		break;
+	case TYPE_INT: {
+		char valueStr[8];
+		int size = response->readBytesUntil(EOT, valueStr, 8);
+		valueStr[size] = TERM;
+		int value = atoi(valueStr);
+		((void (*)(int)) callback)(value);
+	} break;
+	case TYPE_BOOL: {
+		char valueStr[8];
+		size = response->readBytesUntil(EOT, valueStr, 8);
+		valueStr[size] = TERM;
+		int value = atoi(valueStr);
+		((void (*)(bool)) callback)(value);
+	} break;
+	case TYPE_STRING: {
+		char value[65];
+		int size = response->readBytesUntil(EOT, value, 64);
+		value[size] = TERM;
+		((void (*)(const char*)) callback)(value);
+	} break;
+	}
 	return true;
 }
 

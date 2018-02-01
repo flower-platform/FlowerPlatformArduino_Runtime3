@@ -14,7 +14,7 @@ public:
 
 	EthernetRemoteObjectProcessor(int port, const char* securityTokenPSTR);
 
-	void loop();
+	bool loop();
 
 protected:
 
@@ -27,11 +27,12 @@ EthernetRemoteObjectProcessor::EthernetRemoteObjectProcessor(int port, const cha
 	server->begin();
 }
 
-void EthernetRemoteObjectProcessor::loop() {
+bool EthernetRemoteObjectProcessor::loop() {
 	EthernetClient client = server->available();
 	if (client) {
-		HttpRemoteObjectProcessor::processClient(&client);
+		return HttpRemoteObjectProcessor::processClient(&client);
 	}
+	return false;
 }
 
 #endif /* ETHERNETREMOTEOBJECTPROCESSOR_H_ */
