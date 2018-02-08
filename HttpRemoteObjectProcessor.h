@@ -36,7 +36,7 @@ void HttpRemoteObjectProcessor::sendPacketHeader(Print* out, char command, const
 }
 
 bool HttpRemoteObjectProcessor::processClient(Client *client) {
-	Serial.println("processing client");
+	Serial.print(millis()); Serial.println(": processing http client");
 
 	// skip http headers
 	if (!client->find((char*) "\r\n\r\n")) {
@@ -50,8 +50,8 @@ bool HttpRemoteObjectProcessor::processClient(Client *client) {
 		return false;
 	}
 	client->flush();
-	delay(100);
 	client->stop();
+	Serial.print(millis()); Serial.println(": process http client end");
 	return true;
 }
 

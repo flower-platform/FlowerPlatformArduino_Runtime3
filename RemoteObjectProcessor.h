@@ -6,18 +6,20 @@
 #ifndef REMOTEOBJECTPROCESSOR_H_
 #define REMOTEOBJECTPROCESSOR_H_
 
-#include <BufferedPrint.h>
+#include <Arduino.h>
+#include <FlowerPlatformArduinoRuntime.h>
+#include <HardwareSerial.h>
 #include <RemoteObject.h>
 #include <RemoteObjectProtocol.h>
-#include <Stream.h>
+#include <SmartBuffer.h>
 
 
 #ifdef ESP8266
-#define RECV_BUFFER_SIZE 6210
-#define SEND_BUFFER_SIZE 2048
+#define PACKET_BUFFER_SIZE 6210
+#define RESULT_BUFFER_SIZE 2048
 #else
-#define RECV_BUFFER_SIZE 128
-#define SEND_BUFFER_SIZE 64
+#define PACKET_BUFFER_SIZE 128
+#define RESULT_BUFFER_SIZE 64
 #endif
 
 
@@ -47,7 +49,7 @@ protected:
 
 };
 
-void RemoteObjectProcessor::sendPacketHeader(Print* out, char command, const char* securityTokenPSTR, size_t payloadSize) {
+void RemoteObjectProcessor::sendPacketHeader(Print* out, char command, const char* securityTokenPSTR, size_t) {
 	// default implementateion
 	fprp_startPacket(out, command, securityTokenPSTR);
 }
@@ -64,33 +66,34 @@ bool RemoteObjectProcessor::processCommand(Stream* in, Print* out) {
 		return false;
 	}
 	size_t size = 0;
-	char *rbuf = new char[RECV_BUFFER_SIZE];
+	char *buf = new char[PACKET_BUFFER_SIZE];
 
 	// read target node id
-	size = in->readBytesUntil(TERM, rbuf, RECV_BUFFER_SIZE); rbuf[size] = '\0'; // target node id (rappInstanceId)
-	if (nodeIdPSTR != NULL && strcmp_P(rbuf, nodeIdPSTR) != 0) { // not our packet
+	size = in->readBytesUntil(TERM, buf, PACKET_BUFFER_SIZE); buf[size] = '\0'; // target node id (rappInstanceId)
+	if (nodeIdPSTR != NULL && strcmp_P(buf, nodeIdPSTR) != 0) { // not our packet
 		return false;
 	}
 
-	size = in->readBytesUntil(TERM, rbuf, RECV_BUFFER_SIZE); // callbackId
+	size = in->readBytesUntil(TERM, buf, PACKET_BUFFER_SIZE); // callbackId
 	char callbackIdStr[size + 1];
-	strncpy(callbackIdStr, rbuf, size);
+	strncpy(callbackIdStr, buf, size);
 	callbackIdStr[size] = TERM;
-	size = in->readBytesUntil(EOT, rbuf, RECV_BUFFER_SIZE); // function call
-	rbuf[size] = TERM;
+	size = in->readBytesUntil(EOT, buf, PACKET_BUFFER_SIZE); // function call
+	buf[size] = TERM;
 
 	//buffer return value
-	uint8_t *resultBuf = new uint8_t[SEND_BUFFER_SIZE];
-	BufferedPrint<0> resultPrint(out, resultBuf, SEND_BUFFER_SIZE);
-	bool ok = dispatchFunctionCall(rbuf, &resultPrint);
+	uint8_t *resultBuf = new uint8_t[RESULT_BUFFER_SIZE];
+	SmartBuffer resultPrint(resultBuf, RESULT_BUFFER_SIZE);
+	bool ok = dispatchFunctionCall(buf, &resultPrint);
 
-//	Serial.println("Sending response");
+	SmartBuffer responseBuf(out, (uint8_t*) buf, PACKET_BUFFER_SIZE);
 	if (ok) {
 		// send result
-		sendPacketHeader(out, 'R', securityTokenPSTR, strlen(callbackIdStr) + 1 + resultPrint.getSize());
-		out->print(callbackIdStr); out->print(TERM); // callbackId
-		resultPrint.flush();
-		endPacket(out);
+		sendPacketHeader(&responseBuf, 'R', securityTokenPSTR, strlen(callbackIdStr) + 1 + resultPrint.available());
+		responseBuf.print(callbackIdStr); responseBuf.print(TERM); // callbackId
+		resultPrint.flush(&responseBuf);
+		endPacket(&responseBuf);
+		responseBuf.flush();
 	} else {
 		//send error
 		sendPacketHeader(out, 'X', securityTokenPSTR, 0);
@@ -98,7 +101,7 @@ bool RemoteObjectProcessor::processCommand(Stream* in, Print* out) {
 	}
 
 	delete resultBuf;
-	delete rbuf;
+	delete buf;
 
 	return true;
 }
