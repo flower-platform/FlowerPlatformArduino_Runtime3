@@ -21,7 +21,7 @@ public:
 		digitalWrite(slaveSelectPin, HIGH);
 	}
 
-	Stream* sendRequest(SmartBuffer<DEFAULT_BUFFER_SIZE>* buf, SmartBuffer<>* argsBuf);
+	Stream* sendRequest(SmartBuffer* buf, SmartBuffer* argsBuf);
 
 protected:
 
@@ -29,7 +29,7 @@ protected:
 
 };
 
-Stream* SPIRemoteObject::sendRequest(SmartBuffer<DEFAULT_BUFFER_SIZE>* buf, SmartBuffer<>* argsBuf) {
+Stream* SPIRemoteObject::sendRequest(SmartBuffer* buf, SmartBuffer* argsBuf) {
 	// enable slave
 	digitalWrite(slaveSelectPin, LOW);
 

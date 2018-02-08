@@ -17,8 +17,8 @@
 #define ENQ '\5'
 #define NAK '\21'
 
-SmartBuffer<128> spiBuffer;
-SmartBuffer<128> spiResponseBuffer;
+char spiBufferArray[128]; SmartBuffer spiBuffer(spiBufferArray, 128);
+char spiResponseBufferArray[128]; SmartBuffer spiResponseBuffer(spiResponseBufferArray);
 volatile bool processSpiCommand = false;
 
 // SPI interrupt routine

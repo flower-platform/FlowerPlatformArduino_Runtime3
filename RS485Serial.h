@@ -7,7 +7,6 @@
 #define RS485SERIAL_H_
 
 #include <Arduino.h>
-#include <stddef.h>
 #include <Stream.h>
 
 class RS485Serial: public Stream {

@@ -6,6 +6,11 @@
 #ifndef REMOTEOBJECT_H_
 #define REMOTEOBJECT_H_
 
+#ifdef ESP8266
+#define PSTR(X) X
+#define strcmp_P(str1, st2P) strcmp(str1, st2P)
+#endif
+
 #include <FlowerPlatformArduinoRuntime.h>
 #include <HardwareSerial.h>
 #include <RemoteObjectProtocol.h>
@@ -45,14 +50,15 @@ protected:
 
 	const char* securityToken;
 
-	bool callFunction(const char* functionNamePSTR, SmartBuffer<>* argsBuf, void *callback, uint8_t returnTypeId, void* self);
+	bool callFunction(const char* functionNamePSTR, SmartBuffer* argsBuf, void *callback, uint8_t returnTypeId, void* self);
 
-	virtual Stream* sendRequest(SmartBuffer<DEFAULT_BUFFER_SIZE>* buf, SmartBuffer<>* argsBuf) = 0;
+	virtual Stream* sendRequest(SmartBuffer* buf, SmartBuffer* argsBuf) = 0;
 
 };
 
-bool RemoteObject::callFunction(const char* functionNamePSTR, SmartBuffer<>* argsBuf, void *callback = NULL, uint8_t returnTypeId = TYPE_VOID, void* self = NULL) {
-	SmartBuffer<DEFAULT_BUFFER_SIZE> buf;
+bool RemoteObject::callFunction(const char* functionNamePSTR, SmartBuffer* argsBuf, void *callback = NULL, uint8_t returnTypeId = TYPE_VOID, void* self = NULL) {
+	uint8_t bufArray[DEFAULT_BUFFER_SIZE];
+	SmartBuffer buf(bufArray, DEFAULT_BUFFER_SIZE);
 	fprp_startPacket(&buf, 'I', securityToken);
 	if (rappInstance) {
 		write_P(&buf, rappInstance);
@@ -103,7 +109,6 @@ bool RemoteObject::callFunction(const char* functionNamePSTR, SmartBuffer<>* arg
 	return true;
 }
 
-
 struct RemoteObjectCallback {
 	uint16_t callbackId;
 	void* callbackFunction;
@@ -114,11 +119,10 @@ struct RemoteObjectCallback {
 uint8_t callbackIndex = 0;
 
 void registerCallback(uint16_t callbackId, void* self, void* callback, uint8_t returnTypeId) {
-	RemoteObjectCallback cb = callbacks[callbackIndex];
-	cb.callbackId = callbackId;
-	cb.callbackFunction = callback;
-	cb.selfObject = self;
-	cb.returnType = returnTypeId;
+	callbacks[callbackIndex].callbackId = callbackId;
+	callbacks[callbackIndex].callbackFunction = callback;
+	callbacks[callbackIndex].selfObject = self;
+	callbacks[callbackIndex].returnType = returnTypeId;
 	callbackIndex++;
 	if (callbackIndex >= MAX_CALLBACKS) {
 		callbackIndex = 0;

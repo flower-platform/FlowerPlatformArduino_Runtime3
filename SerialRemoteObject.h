@@ -20,7 +20,7 @@ public:
 		this->rs485 = rs485;
 	}
 
-	Stream* sendRequest(SmartBuffer<DEFAULT_BUFFER_SIZE>* buf, SmartBuffer<>* argsBuf);
+	Stream* sendRequest(SmartBuffer* buf, SmartBuffer* argsBuf);
 
 protected:
 
@@ -28,7 +28,7 @@ protected:
 
 };
 
-Stream* SerialRemoteObject::sendRequest(SmartBuffer<DEFAULT_BUFFER_SIZE>* buf, SmartBuffer<>* argsBuf) {
+Stream* SerialRemoteObject::sendRequest(SmartBuffer* buf, SmartBuffer* argsBuf) {
 	// send payload
 	size_t size = buf->available();
 	if (argsBuf) {

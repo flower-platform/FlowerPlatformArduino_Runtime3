@@ -34,11 +34,11 @@ protected:
 
 	void disconnect();
 
-	Stream* sendRequest(SmartBuffer<DEFAULT_BUFFER_SIZE>* buf, SmartBuffer<>* argsBuf);
+	Stream* sendRequest(SmartBuffer* buf, SmartBuffer* argsBuf);
 
 };
 
-Stream* EthernetRemoteObject::sendRequest(SmartBuffer<DEFAULT_BUFFER_SIZE>* buf, SmartBuffer<>* argsBuf) {
+Stream* EthernetRemoteObject::sendRequest(SmartBuffer* buf, SmartBuffer* argsBuf) {
 	// connect
 	char address[strlen_P(remoteAddress) + 1];
 	strcpy_P(address, remoteAddress);

@@ -10,12 +10,6 @@
 #include <stddef.h>
 
 #ifdef ESP8266
-#define PSTR(X) X
-#define strcmp_P(str1, st2P) strcmp(str1, st2P)
-#endif
-
-
-#ifdef ESP8266
 extern "C" {
 #include "user_interface.h"
 }
