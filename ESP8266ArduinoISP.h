@@ -12,10 +12,7 @@
 #include <Esp.h>
 #include <flash_utils.h>
 #include <HardwareSerial.h>
-#include <pins_arduino.h>
-#include <stdlib.h>
 #include <SPI.h>
-#include <cstdint>
 
 //#define DEBUG
 #ifdef DEBUG

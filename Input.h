@@ -37,7 +37,7 @@ public:
 
 	void loop();
 
-	void printStateAsJson(const __FlashStringHelper* instanceName, Print* print);
+	void printStateAsJson(const __FlashStringHelper* objectName, Print* print);
 
 };
 
@@ -77,9 +77,9 @@ void Input::loop() {
 
 }
 
-void Input::printStateAsJson(const __FlashStringHelper* instanceName, Print* print) {
+void Input::printStateAsJson(const __FlashStringHelper* objectName, Print* print) {
 	print->print(F("\""));
-	print->print(instanceName);
+	print->print(objectName);
 	print->print(F("\":"));
 	print->print(lastValue);
 }

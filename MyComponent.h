@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 class MyComponent {
 protected:
 	int shouldntAppear1;
@@ -29,7 +31,7 @@ public:
 	 * @flower { ignore = "true" }
 	 */
 	void (*event4)(ValueChangedEvent*) = NULL;
-}
+};
 
 /*
  * @flower { ignore = "true" }

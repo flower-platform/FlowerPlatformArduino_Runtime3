@@ -40,7 +40,8 @@ public:
 
 	bool loop() {
 		if (rs485->available()) {
-			size_t size = ((rs485->timedRead() & 0xFF) << 8) | (rs485->timedRead() & 0xFF);
+//			size_t frameSize = ((rs485->timedRead() & 0xFF) << 8) | (rs485->timedRead() & 0xFF);
+			rs485->timedRead(); rs485->timedRead(); // ignore frame size
 			return processCommand(rs485, rs485);
 		}
 		return false;

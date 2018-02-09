@@ -26,9 +26,9 @@
 class RemoteObjectProcessor {
 public:
 
-	RemoteObjectProcessor(const char* securityTokenPSTR, const char* nodeIdPSTR = NULL) {
+	RemoteObjectProcessor(const char* securityTokenPSTR, const char* localNodeIdPSTR = NULL) {
 		this->securityTokenPSTR = securityTokenPSTR;
-		this->nodeIdPSTR = nodeIdPSTR;
+		this->localNodeIdPSTR = localNodeIdPSTR;
 	}
 
 	virtual ~RemoteObjectProcessor() { }
@@ -45,7 +45,7 @@ protected:
 
 	const char* securityTokenPSTR;
 
-	const char* nodeIdPSTR;
+	const char* localNodeIdPSTR;
 
 };
 
@@ -68,9 +68,9 @@ bool RemoteObjectProcessor::processCommand(Stream* in, Print* out) {
 	size_t size = 0;
 	char *buf = new char[PACKET_BUFFER_SIZE];
 
-	// read target node id
-	size = in->readBytesUntil(TERM, buf, PACKET_BUFFER_SIZE); buf[size] = '\0'; // target node id (rappInstanceId)
-	if (nodeIdPSTR != NULL && strcmp_P(buf, nodeIdPSTR) != 0) { // not our packet
+	// check node id
+	size = in->readBytesUntil(TERM, buf, PACKET_BUFFER_SIZE); buf[size] = '\0'; // node id
+	if (localNodeIdPSTR != NULL && strcmp_P(buf, localNodeIdPSTR) != 0) { // not our packet
 		return false;
 	}
 

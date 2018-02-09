@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 class MyComponent3 : public Input, public MyComponent2, public MyComponent {
 public:
 	int attribute1_3;
@@ -9,4 +11,4 @@ public:
 	int attribute3_3;
 
 	void (*event3_3)(ValueChangedEvent*) = NULL;
-}
+};

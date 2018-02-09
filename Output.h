@@ -30,7 +30,7 @@ public:
 	 */
 	Output(int pin, bool isPwm = false, uint8_t initialValue = LOW);
 
-	void printStateAsJson(const __FlashStringHelper* instanceName, Print* print);
+	void printStateAsJson(const __FlashStringHelper* objectName, Print* print);
 
 	void setHigh();
 
@@ -52,9 +52,9 @@ Output::Output(int pin, bool isPwm, uint8_t initialValue) {
     lastValue = initialValue;
 }
 
-void Output::printStateAsJson(const __FlashStringHelper* instanceName, Print* print) {
+void Output::printStateAsJson(const __FlashStringHelper* objectName, Print* print) {
 	print->print(F("\""));
-	print->print(instanceName);
+	print->print(objectName);
 	print->print(F("\": "));
 	print->print(lastValue);
 }

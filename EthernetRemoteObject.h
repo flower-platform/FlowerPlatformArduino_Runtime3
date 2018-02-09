@@ -19,7 +19,7 @@
 class EthernetRemoteObject : public RemoteObject {
 public:
 
-	EthernetRemoteObject(const char* rappInstancePSTR, const char* instanceNamePSTR, const char* securityTokenPSTR, const char* remoteAddressPSTR, int endpointPort) : RemoteObject(rappInstancePSTR, instanceNamePSTR, securityTokenPSTR) {
+	EthernetRemoteObject(const char* nodeIdPSTR, const char* objectNamePSTR, const char* securityTokenPSTR, const char* remoteAddressPSTR, int endpointPort) : RemoteObject(nodeIdPSTR, objectNamePSTR, securityTokenPSTR) {
 		this->remoteAddress = remoteAddressPSTR;
 		this->endpointPort = endpointPort;
 		W5100.setRetransmissionTime(0x1388); // 500ms
@@ -34,11 +34,11 @@ protected:
 
 	void disconnect();
 
-	Stream* sendRequest(SmartBuffer* buf, SmartBuffer* argsBuf);
+	Stream* sendRequest(SmartBuffer* buf);
 
 };
 
-Stream* EthernetRemoteObject::sendRequest(SmartBuffer* buf, SmartBuffer* argsBuf) {
+Stream* EthernetRemoteObject::sendRequest(SmartBuffer* buf) {
 	// connect
 	char address[strlen_P(remoteAddress) + 1];
 	strcpy_P(address, remoteAddress);
@@ -49,21 +49,15 @@ Stream* EthernetRemoteObject::sendRequest(SmartBuffer* buf, SmartBuffer* argsBuf
 
 	// compute payload size
 	size_t contentLength = buf->available();
-	if (argsBuf) {
-		contentLength += argsBuf->available();
-	}
 
 	// send http headers
-	write_P(&client, PSTR("POST ")); client.print(rappInstance ? "/hub" : "/remoteObject"); write_P(&client, PSTR(" HTTP/1.1\r\n"));
+	write_P(&client, PSTR("POST ")); client.print(remoteNodeIdPSTR ? "/hub" : "/remoteObject"); write_P(&client, PSTR(" HTTP/1.1\r\n"));
 	write_P(&client, PSTR("Content-Length: ")); client.println(contentLength);
 	write_P(&client, PSTR("Host: ")); write_P(&client, remoteAddress); client.println();
 	client.println();
 
 	// send payload
 	buf->flush(&client);
-	if (argsBuf) {
-		argsBuf->flush(&client);
-	}
 
 	// skip http headers; exit if headers not found
 	if (!client.find((char*) "\r\n\r\n")) {

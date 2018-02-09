@@ -6,21 +6,19 @@
 #include <RemoteObject.h>
 #include <RemoteObjectProtocol.h>
 #include <RS485Serial.h>
-#include <stddef.h>
 #include <SmartBuffer.h>
-#include <cstdint>
 
 class RS485Serial;
 
 class SerialRemoteObject: public RemoteObject {
 public:
 
-	SerialRemoteObject(const char* rappInstancePSTR, const char* instanceNamePSTR, const char* securityTokenPSTR, RS485Serial* rs485) :
-			RemoteObject(rappInstancePSTR, instanceNamePSTR, securityTokenPSTR) {
+	SerialRemoteObject(const char* nodeIdPSTR, const char* objectNamePSTR, const char* securityTokenPSTR, RS485Serial* rs485) :
+			RemoteObject(nodeIdPSTR, objectNamePSTR, securityTokenPSTR) {
 		this->rs485 = rs485;
 	}
 
-	Stream* sendRequest(SmartBuffer* buf, SmartBuffer* argsBuf);
+	Stream* sendRequest(SmartBuffer* buf);
 
 protected:
 
@@ -28,20 +26,13 @@ protected:
 
 };
 
-Stream* SerialRemoteObject::sendRequest(SmartBuffer* buf, SmartBuffer* argsBuf) {
+Stream* SerialRemoteObject::sendRequest(SmartBuffer* buf) {
 	// send payload
 	size_t size = buf->available();
-	if (argsBuf) {
-		size += buf->available();
-	}
-
 	rs485->setBatchWriteMode(true);
 	rs485->write((size >> 8) & 0xFF);
 	rs485->write(size & 0xFF);
 	buf->flush(rs485);
-	if (argsBuf) {
-		argsBuf->flush(rs485);
-	}
 	rs485->setBatchWriteMode(false);
 
 	// read response

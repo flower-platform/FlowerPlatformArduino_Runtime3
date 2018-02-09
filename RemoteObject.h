@@ -34,56 +34,54 @@ bool executeCallback(void* self, void* callback, uint8_t returnType, Stream *res
 class RemoteObject {
 public:
 
-	RemoteObject(const char* rappInstancePSTR, const char* instanceNamePSTR, const char* securityTokenPSTR) {
-		this->rappInstance = rappInstancePSTR;
-		this->instanceName = instanceNamePSTR;
-		this->securityToken = securityTokenPSTR;
+	RemoteObject(const char* remoteNodeIdPSTR, const char* objectNamePSTR, const char* securityTokenPSTR) {
+		this->remoteNodeIdPSTR = remoteNodeIdPSTR;
+		this->objectNamePSTR = objectNamePSTR;
+		this->securityTokenPSTR = securityTokenPSTR;
 	};
 
 	virtual ~RemoteObject() { }
 
 protected:
 
-	const char* rappInstance;
+	const char* remoteNodeIdPSTR;
 
-	const char* instanceName;
+	const char* objectNamePSTR;
 
-	const char* securityToken;
+	const char* securityTokenPSTR;
 
 	bool callFunction(const char* functionNamePSTR, SmartBuffer* argsBuf, void *callback, uint8_t returnTypeId, void* self);
 
-	virtual Stream* sendRequest(SmartBuffer* buf, SmartBuffer* argsBuf) = 0;
+	virtual Stream* sendRequest(SmartBuffer* buf) = 0;
 
 };
 
 bool RemoteObject::callFunction(const char* functionNamePSTR, SmartBuffer* argsBuf, void *callback = NULL, uint8_t returnTypeId = TYPE_VOID, void* self = NULL) {
 	uint8_t bufArray[DEFAULT_BUFFER_SIZE];
 	SmartBuffer buf(bufArray, DEFAULT_BUFFER_SIZE);
-	fprp_startPacket(&buf, 'I', securityToken);
-	if (rappInstance) {
-		write_P(&buf, rappInstance);
+	fprp_startPacket(&buf, 'I', securityTokenPSTR);
+	if (remoteNodeIdPSTR) {
+		buf.write_P(remoteNodeIdPSTR);
 	}
-	buf.print(TERM); // rappInstance
+	buf.print(TERM); // remoteNodeId
 	buf.print(TERM); // callbackId = null
-	if (instanceName != NULL) {
-		write_P(&buf, instanceName); buf.print('.');
+	if (objectNamePSTR != NULL) {
+		buf.write_P(objectNamePSTR); buf.print('.');
 	}
 	write_P(&buf, functionNamePSTR); buf.print(TERM);
-
 	if (argsBuf) {
-		argsBuf->print(EOT);
-	} else {
-		buf.print(EOT);
+		argsBuf->flush(&buf);
 	}
+	buf.print(EOT);
 
-	Stream* in = sendRequest(&buf, argsBuf);
+	Stream* in = sendRequest(&buf);
 	if (in == NULL) {
 		return false;
 	}
 
 	// *** read response ***
 
-	int cmd = fprp_readCommand(in, securityToken);
+	int cmd = fprp_readCommand(in, securityTokenPSTR);
 	if (cmd < 0) {
 		Serial.print("Error reading command: "); Serial.println(cmd);
 		return false;

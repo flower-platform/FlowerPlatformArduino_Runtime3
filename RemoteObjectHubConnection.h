@@ -8,7 +8,6 @@
 
 #include <FlowerPlatformArduinoRuntime.h>
 #include <HardwareSerial.h>
-#include <NetworkConnection.h>
 #include <RemoteObject.h>
 #include <RemoteObjectProtocol.h>
 
@@ -23,7 +22,7 @@
 class RemoteObjectHubConnection {
 public:
 
-	RemoteObjectHubConnection(const char* remoteAddressPSTR, int endpointPort, unsigned long pollInterval, const char* securityTokenPSTR, const char* localRappInstanceName, uint16_t localServerPort);
+	RemoteObjectHubConnection(const char* remoteAddressPSTR, int remotePort, unsigned long pollInterval, const char* securityTokenPSTR, const char* localNodeId, uint16_t localServerPort);
 
 	bool processCommand(Stream* in, Print* out);
 
@@ -33,21 +32,23 @@ public:
 
 protected:
 
-	const char* remoteAddress;
+	const char* remoteAddressPSTR;
 
-	int endpointPort = 80;
+	int remotePort = 80;
 
 	unsigned long pollInterval;
 
 	unsigned long lastPollTime = 0;
 
-	const char* securityToken;
+	const char* securityTokenPSTR;
 
-	const char* localRappInstanceName;
+	const char* localNodeId;
 
 	bool registered = false;
 
 	uint16_t localServerPort = 0;
+
+	virtual Client* connect(const char* remoteAddress, int remotePort) = 0;
 
 	void registerToHub(Stream* in, Print* out);
 
@@ -57,12 +58,12 @@ protected:
 
 
 
-RemoteObjectHubConnection::RemoteObjectHubConnection(const char* remoteAddressPSTR, int endpointPort, unsigned long pollInterval, const char* securityTokenPSTR, const char* localRappInstanceName, uint16_t localServerPort) {
-	this->remoteAddress = remoteAddressPSTR;
-	this->endpointPort = endpointPort;
+RemoteObjectHubConnection::RemoteObjectHubConnection(const char* remoteAddressPSTR, int remotePort, unsigned long pollInterval, const char* securityTokenPSTR, const char* localNodeId, uint16_t localServerPort) {
+	this->remoteAddressPSTR = remoteAddressPSTR;
+	this->remotePort = remotePort;
 	this->pollInterval = pollInterval;
-	this->securityToken = securityTokenPSTR;
-	this->localRappInstanceName = localRappInstanceName;
+	this->securityTokenPSTR = securityTokenPSTR;
+	this->localNodeId = localNodeId;
 	this->localServerPort = localServerPort;
 }
 
@@ -73,7 +74,7 @@ bool RemoteObjectHubConnection::processCommand(Stream* in, Print* out) {
 	}
 
 	size_t size = 0;
-	int cmd = fprp_readCommand(in, securityToken);
+	int cmd = fprp_readCommand(in, securityTokenPSTR);
 	if (cmd < 0) {
 		Serial.print("Error reading command: "); Serial.println(cmd);
 		registered = false;
@@ -86,9 +87,7 @@ bool RemoteObjectHubConnection::processCommand(Stream* in, Print* out) {
 
 	switch (cmd) {
 	case 'I': {  // INVOKE
-//		size = connection->in->readBytesUntil('\0', rbuf, RECV_BUFFER_SIZE); // hasNext
-//		hasNext = (*rbuf == '1');
-		in->readBytesUntil('\0', rbuf, PACKET_BUFFER_SIZE); // rappInstanceId (ignored)
+		in->readBytesUntil('\0', rbuf, PACKET_BUFFER_SIZE); // nodeId (ignored)
 		size = in->readBytesUntil('\0', rbuf, PACKET_BUFFER_SIZE); // callbackId
 		strncpy(callbackIdStr, rbuf, size);
 		callbackIdStr[size] = '\0';
@@ -104,7 +103,7 @@ bool RemoteObjectHubConnection::processCommand(Stream* in, Print* out) {
 		// start HTTP request; send headers
 		startHttpRequest(out, "/hub", FPRP_PACKET_OVERHEAD_SIZE + tbuf.available());
 		// send response packet
-		fprp_startPacket(out, 'R', securityToken); // command = RESULT
+		fprp_startPacket(out, 'R', securityTokenPSTR); // command = RESULT
 		tbuf.flush();
 		fprp_endPacket(out);
 //		connection->flush();
@@ -127,10 +126,10 @@ void RemoteObjectHubConnection::registerToHub(Stream* in, Print* out) {
 	Serial.println("Registering...");
 	uint8_t bufArray[32];
 	SmartBuffer buf(out, bufArray, 43);
-	write_P(&buf, localRappInstanceName); buf.print(TERM);
+	write_P(&buf, localNodeId); buf.print(TERM);
 	buf.print(localServerPort);	buf.print(TERM);
 	startHttpRequest(out, "/hub", FPRP_PACKET_OVERHEAD_SIZE + buf.available());
-	fprp_startPacket(out, 'A', securityToken); // register
+	fprp_startPacket(out, 'A', securityTokenPSTR); // register
 	buf.flush();
 	fprp_endPacket(out);
 //	connection->flush();
@@ -144,7 +143,9 @@ void RemoteObjectHubConnection::loop() {
 	}
 	lastPollTime = millis();
 
-	Client* client = connect();
+	char address[strlen_P(remoteAddressPSTR) + 1];
+	strcpy_P(address, remoteAddressPSTR);
+	Client* client = connect(address, remotePort);
 
 	if (!client) {
 		registered = false;
@@ -156,7 +157,7 @@ void RemoteObjectHubConnection::loop() {
 
 	// get pending invocations
 	startHttpRequest(client, "/hub", FPRP_PACKET_OVERHEAD_SIZE);
-	fprp_startPacket(client, 'J', securityToken);
+	fprp_startPacket(client, 'J', securityTokenPSTR);
 	fprp_endPacket(client);
 	client->flush();
 
@@ -164,7 +165,7 @@ void RemoteObjectHubConnection::loop() {
 
 	// get pending responses
 	startHttpRequest(client, "/hub", FPRP_PACKET_OVERHEAD_SIZE);
-	fprp_startPacket(client, 'S', securityToken);
+	fprp_startPacket(client, 'S', securityTokenPSTR);
 	fprp_endPacket(client);
 	client->flush();
 	while(processCommand(client, client));
@@ -178,7 +179,7 @@ void RemoteObjectHubConnection::startHttpRequest(Print* out, const char* url, in
 	if (contentLength >= 0) {
 		write_P(out, PSTR("Content-Length: ")); out->println(contentLength);
 	}
-	write_P(out, PSTR("Host: ")); write_P(out, remoteAddress); out->println();
+	write_P(out, PSTR("Host: ")); write_P(out, remoteAddressPSTR); out->println();
 	out->println();
 }
 

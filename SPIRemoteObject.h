@@ -13,15 +13,15 @@
 class SPIRemoteObject: public RemoteObject {
 public:
 
-	SPIRemoteObject(const char* rappInstancePSTR, const char* instanceNamePSTR,
-			const char* securityTokenPSTR, uint8_t slaveSelectPin) :
-			RemoteObject(rappInstancePSTR, instanceNamePSTR, securityTokenPSTR) {
+	SPIRemoteObject(const char* nodeIdPSTR, const char* objectNamePSTR,	const char* securityTokenPSTR, uint8_t slaveSelectPin) :
+			RemoteObject(nodeIdPSTR, objectNamePSTR, securityTokenPSTR) {
+
 		this->slaveSelectPin = slaveSelectPin;
 		pinMode(slaveSelectPin, OUTPUT);
 		digitalWrite(slaveSelectPin, HIGH);
 	}
 
-	Stream* sendRequest(SmartBuffer* buf, SmartBuffer* argsBuf);
+	Stream* sendRequest(SmartBuffer* buf);
 
 protected:
 
@@ -29,7 +29,7 @@ protected:
 
 };
 
-Stream* SPIRemoteObject::sendRequest(SmartBuffer* buf, SmartBuffer* argsBuf) {
+Stream* SPIRemoteObject::sendRequest(SmartBuffer* buf) {
 	// enable slave
 	digitalWrite(slaveSelectPin, LOW);
 
@@ -37,12 +37,6 @@ Stream* SPIRemoteObject::sendRequest(SmartBuffer* buf, SmartBuffer* argsBuf) {
 	while (buf->available()) {
 		uint8_t c = buf->read();
 		SPI.transfer(c);
-	}
-	if (argsBuf) {
-		while (argsBuf->available()) {
-			uint8_t c = argsBuf->read();
-			SPI.transfer(c);
-		}
 	}
 
 	uint8_t c;
