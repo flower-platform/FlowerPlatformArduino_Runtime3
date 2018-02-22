@@ -22,7 +22,7 @@
 class RemoteObjectHubConnection {
 public:
 
-	RemoteObjectHubConnection(const char* remoteAddressPSTR, int remotePort, unsigned long pollInterval, const char* securityTokenPSTR, const char* localNodeId, uint16_t localServerPort);
+	RemoteObjectHubConnection(const char* remoteAddressPSTR, uint16_t remotePort, unsigned long pollInterval, const char* securityTokenPSTR, const char* localNodeId, uint16_t localServerPort);
 
 	bool processCommand(Stream* in, Print* out);
 
@@ -34,7 +34,7 @@ protected:
 
 	const char* remoteAddressPSTR;
 
-	int remotePort = 80;
+	uint16_t remotePort = 80;
 
 	unsigned long pollInterval;
 
@@ -48,7 +48,7 @@ protected:
 
 	uint16_t localServerPort = 0;
 
-	virtual Client* connect(const char* remoteAddress, int remotePort) = 0;
+	virtual Client* connect(const char* remoteAddress, uint16_t remotePort) = 0;
 
 	void registerToHub(Stream* in, Print* out);
 
@@ -58,7 +58,7 @@ protected:
 
 
 
-RemoteObjectHubConnection::RemoteObjectHubConnection(const char* remoteAddressPSTR, int remotePort, unsigned long pollInterval, const char* securityTokenPSTR, const char* localNodeId, uint16_t localServerPort) {
+RemoteObjectHubConnection::RemoteObjectHubConnection(const char* remoteAddressPSTR, uint16_t remotePort, unsigned long pollInterval, const char* securityTokenPSTR, const char* localNodeId, uint16_t localServerPort) {
 	this->remoteAddressPSTR = remoteAddressPSTR;
 	this->remotePort = remotePort;
 	this->pollInterval = pollInterval;
