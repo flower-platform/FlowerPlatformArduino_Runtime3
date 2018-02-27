@@ -72,6 +72,7 @@ Stream* HttpRemoteObject::sendRequest(SmartBuffer* buf) {
 	buf->clear();
 	size_t n = client->readBytesUntil(EOT, buf->getBuffer(), buf->capacity());
 	buf->setSize(n);
+	buf->write(EOT); // include EOT in packet
 	Serial.print("Received "); Serial.print(n); Serial.println(" bytes");
 
 	// disconnect

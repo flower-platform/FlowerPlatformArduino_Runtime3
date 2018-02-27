@@ -149,21 +149,21 @@ bool executeCallback(void* self, void* callback, uint8_t returnType, Stream *res
 		break;
 	case TYPE_INT: {
 		char valueStr[8];
-		int size = response->readBytesUntil(TERM, valueStr, 8);
+		int size = response->readBytesUntil(EOT, valueStr, 8);
 		valueStr[size] = TERM;
 		int value = atoi(valueStr);
 		((void (*)(void*, int)) callback)(self, value);
 	} break;
 	case TYPE_BOOL: {
 		char valueStr[8];
-		size = response->readBytesUntil(TERM, valueStr, 8);
+		size = response->readBytesUntil(EOT, valueStr, 8);
 		valueStr[size] = TERM;
 		int value = atoi(valueStr);
 		((void (*)(void*, bool)) callback)(self, value);
 	} break;
 	case TYPE_STRING: {
 		char value[65];
-		int size = response->readBytesUntil(TERM, value, 64);
+		int size = response->readBytesUntil(EOT, value, 64);
 		value[size] = TERM;
 		((void (*)(void*, const char*)) callback)(self, value);
 	} break;
