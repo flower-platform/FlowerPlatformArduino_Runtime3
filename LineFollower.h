@@ -22,6 +22,8 @@ protected:
 
 public:
 
+	uint8_t orientation = 0;
+
 	LineFollower() {
 		serial = new SoftwareSerial(D3, D4);
 		rs485 = new RS485Serial(serial);
@@ -44,6 +46,16 @@ public:
 	virtual void searchRoad(int roadNumber) = 0;
 
 	virtual ~LineFollower() { }
+
+	void rotate(uint8_t newOrientation) {
+		int diff = (newOrientation - orientation) % 4;
+		if (diff > 0) {
+			rotateClockwise(diff);
+		} else if (diff < 0) {
+			rotateCounterClockwise(-diff);
+		}
+		orientation = newOrientation;
+	}
 
 	void rotateClockwise(int tillRoad)  {
 		rotateClockwise();
