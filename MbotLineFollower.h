@@ -44,9 +44,13 @@ void MbotLineFollower::lineFollow() {
 		} else if (sensorBits == 3) { // both sensors over the line
 			lf->robotControlService->setMotorSpeeds(BASE_SPEED, BASE_SPEED);
 		} else if (sensorBits == 1) {
-			lf->robotControlService->setMotorSpeeds(BASE_SPEED + SPEED_CORRECTION, BASE_SPEED - SPEED_CORRECTION);
+//			lf->robotControlService->setMotorSpeeds(BASE_SPEED + SPEED_CORRECTION, BASE_SPEED - SPEED_CORRECTION);
+			lf->robotControlService->setMotorSpeeds(BASE_SPEED + SPEED_CORRECTION/2, BASE_SPEED - SPEED_CORRECTION);
+//			lf->robotControlService->setMotorSpeeds(BASE_SPEED, BASE_SPEED - SPEED_CORRECTION);
 		} else if (sensorBits == 2) {
-			lf->robotControlService->setMotorSpeeds(BASE_SPEED - SPEED_CORRECTION, BASE_SPEED + SPEED_CORRECTION);
+//			lf->robotControlService->setMotorSpeeds(BASE_SPEED - SPEED_CORRECTION, BASE_SPEED + SPEED_CORRECTION);
+			lf->robotControlService->setMotorSpeeds(BASE_SPEED - SPEED_CORRECTION, BASE_SPEED + SPEED_CORRECTION/2);
+//			lf->robotControlService->setMotorSpeeds(BASE_SPEED - SPEED_CORRECTION, BASE_SPEED);
 		}
 		lf->lastSensorBits = sensorBits;
 	});
@@ -63,12 +67,12 @@ void MbotLineFollower::stop() {
 
 void MbotLineFollower::rotateClockwise() {
 	Serial.println("Rotating CW...");
-	robotControlService->setMotorSpeeds(0.6 * BASE_SPEED, -0.6 * BASE_SPEED);
+	robotControlService->setMotorSpeeds(0.60 * BASE_SPEED, -0.60 * BASE_SPEED);
 }
 
 void MbotLineFollower::rotateCounterClockwise() {
 	Serial.println("Rotating CCW...");
-	robotControlService->setMotorSpeeds(-0.6 * BASE_SPEED, 0.6 * BASE_SPEED);
+	robotControlService->setMotorSpeeds(-0.60 * BASE_SPEED, 0.60 * BASE_SPEED);
 }
 
 void MbotLineFollower::searchRoad(int roadNumber) {

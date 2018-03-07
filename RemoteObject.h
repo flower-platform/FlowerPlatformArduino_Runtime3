@@ -35,7 +35,9 @@ class RemoteObject {
 public:
 
 	RemoteObject(const char* remoteNodeIdPSTR, const char* objectNamePSTR, const char* securityTokenPSTR) {
-		this->remoteNodeIdPSTR = remoteNodeIdPSTR;
+		if (remoteNodeIdPSTR != NULL) {
+			strcpy_P(this->remoteNodeId, remoteNodeIdPSTR);
+		}
 		this->objectNamePSTR = objectNamePSTR;
 		this->securityTokenPSTR = securityTokenPSTR;
 	};
@@ -46,7 +48,7 @@ public:
 
 protected:
 
-	const char* remoteNodeIdPSTR;
+	char remoteNodeId[32] = { '\0' };
 
 	const char* objectNamePSTR;
 
@@ -60,8 +62,8 @@ bool RemoteObject::callFunction(const char* functionNamePSTR, SmartBuffer* argsB
 	uint8_t bufArray[DEFAULT_BUFFER_SIZE];
 	SmartBuffer buf(bufArray, DEFAULT_BUFFER_SIZE);
 	fprp_startPacket(&buf, 'I', securityTokenPSTR);
-	if (remoteNodeIdPSTR) {
-		buf.write_P(remoteNodeIdPSTR);
+	if (strlen(remoteNodeId) > 0) {
+		buf.print(remoteNodeId);
 	}
 	buf.print(TERM); // remoteNodeId
 	buf.print(TERM); // callbackId = null

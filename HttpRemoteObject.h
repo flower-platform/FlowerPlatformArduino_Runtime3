@@ -19,14 +19,14 @@ class HttpRemoteObject : public RemoteObject {
 public:
 
 	HttpRemoteObject(const char* nodeIdPSTR, const char* objectNamePSTR, const char* securityTokenPSTR, const char* remoteAddressPSTR, uint16_t remotePort, Client* client) : RemoteObject(nodeIdPSTR, objectNamePSTR, securityTokenPSTR) {
-		this->remoteAddress = remoteAddressPSTR;
+		strcpy_P(this->remoteAddress, remoteAddressPSTR);
 		this->remotePort = remotePort;
 		this->client = client;
 	}
 
 protected:
 
-	const char* remoteAddress;
+	char remoteAddress[16];
 
 	uint16_t remotePort;
 
@@ -39,20 +39,17 @@ protected:
 };
 
 Stream* HttpRemoteObject::sendRequest(SmartBuffer* buf) {
-	// connect
-	char address[strlen_P(remoteAddress) + 1];
-	strcpy_P(address, remoteAddress);
-	Serial.print(address); Serial.println(" connecting...");
+	Serial.print(remoteAddress); Serial.println(" connecting...");
 //	WiFiClient client;
-	int connStatus = client->connect(address, remotePort);
-	Serial.print(address); Serial.print(":"); Serial.print(remotePort); Serial.print(" connect status: "); Serial.println(connStatus);
+	int connStatus = client->connect(remoteAddress, remotePort);
+	Serial.print(remoteAddress); Serial.print(":"); Serial.print(remotePort); Serial.print(" connect status: "); Serial.println(connStatus);
 
 	// compute payload size
 	size_t contentLength = buf->available();
 
 	// buffer http headers
 	uint8_t reqBufArray[128 + contentLength]; SmartBuffer reqBuf(reqBufArray, 128 + contentLength);
-	reqBuf.write_P(PSTR("POST ")); reqBuf.print(remoteNodeIdPSTR ? "/hub" : "/remoteObject"); reqBuf.write_P(PSTR(" HTTP/1.1\r\n"));
+	reqBuf.write_P(PSTR("POST ")); reqBuf.print(strlen(remoteNodeId) > 0 ? "/hub" : "/remoteObject"); reqBuf.write_P(PSTR(" HTTP/1.1\r\n"));
 	reqBuf.write_P(PSTR("Content-Length: ")); reqBuf.println(contentLength);
 	reqBuf.write_P(PSTR("Host: ")); reqBuf.write_P(remoteAddress); reqBuf.println();
 	reqBuf.println();

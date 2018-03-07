@@ -48,7 +48,13 @@ public:
 	virtual ~LineFollower() { }
 
 	void rotate(uint8_t newOrientation) {
-		int diff = (newOrientation - orientation) % 4;
+		int diff = newOrientation - orientation;
+		if (abs(diff + 4) < abs(diff)) {
+			diff += 4;
+		} else if (abs(diff - 4) < abs(diff)) {
+			diff -= 4;
+		}
+
 		if (diff > 0) {
 			rotateClockwise(diff);
 		} else if (diff < 0) {
