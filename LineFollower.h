@@ -22,6 +22,8 @@ protected:
 
 public:
 
+	uint8_t BASE_SPEED = 0;
+
 	uint8_t orientation = 0;
 
 	LineFollower() {
@@ -71,6 +73,10 @@ public:
 	void rotateCounterClockwise(int tillRoad)  {
 		rotateCounterClockwise();
 		searchRoad(tillRoad);
+	}
+
+	void setBaseSpeed(uint8_t speed) {
+		BASE_SPEED = speed;
 	}
 
 };
