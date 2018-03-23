@@ -33,25 +33,25 @@ public:
 
 void MbotLineFollower::begin() {
 	LineFollower::begin("mbot");
-	BASE_SPEED = 130;
+	BASE_SPEED = 120;
 }
 
 void MbotLineFollower::lineFollow() {
-	robotControlService->readSensors(this, [](void* self, int sensorBits) {
+	robotControlService->readSensors(this, [](int, void* self, int sensorBits) {
 		MbotLineFollower* lf = (MbotLineFollower*) self;
 		if (sensorBits == lf->lastSensorBits && lf->running) {
 			return;
 		}
 		Serial.print("sensorBits: "); Serial.println(sensorBits);
-		int SPEED_CORRECTION = lf->BASE_SPEED * 65 / 100;
+		int SPEED_CORRECTION = lf->BASE_SPEED * 50 / 100;
 
 		if (sensorBits == 0) {
 			if (lf->lastSensorBits == 3) {
 				lf->stop();
 			} else if (lf->lastSensorBits == 1) {
-				lf->robotControlService->setMotorSpeeds(lf->BASE_SPEED, 0);
+				lf->robotControlService->setMotorSpeeds(lf->BASE_SPEED * 80 / 100, 0);
 			} else if (lf->lastSensorBits == 2) {
-				lf->robotControlService->setMotorSpeeds(0, lf->BASE_SPEED);
+				lf->robotControlService->setMotorSpeeds(0, lf->BASE_SPEED  * 80 / 100);
 			}
 		} else if (sensorBits == 3) { // both sensors over the line
 			lf->robotControlService->setMotorSpeeds(lf->BASE_SPEED, lf->BASE_SPEED);
@@ -127,7 +127,6 @@ void MbotLineFollower::lineFollow1() {
 
 void MbotLineFollower::forward() {
 	robotControlService->setMotorSpeeds(BASE_SPEED, BASE_SPEED);
-	delay(200);
 }
 
 void MbotLineFollower::stop() {
@@ -149,7 +148,7 @@ void MbotLineFollower::searchRoad(int roadNumber) {
     while (roadNumber > 0) {
 		keepLoop = true;
 		while (keepLoop) {
-			robotControlService->readSensors(this, [](void* self, int sensorBits) {
+			robotControlService->readSensors(this, [](int, void* self, int sensorBits) {
 				MbotLineFollower* lf = (MbotLineFollower*) self;
 				lf->keepLoop = (sensorBits != 0);
 			});
@@ -157,7 +156,7 @@ void MbotLineFollower::searchRoad(int roadNumber) {
 		}
 		keepLoop = true;
 		while (keepLoop) {
-			robotControlService->readSensors(this, [](void* self, int sensorBits) {
+			robotControlService->readSensors(this, [](int, void* self, int sensorBits) {
 				MbotLineFollower* lf = (MbotLineFollower*) self;
 //				lf->keepLoop = (sensorBits != 3);
 				lf->keepLoop = (sensorBits == 0);

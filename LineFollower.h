@@ -29,7 +29,7 @@ public:
 	LineFollower() {
 		serial = new SoftwareSerial(D3, D4);
 		rs485 = new RS485Serial(serial);
-		serial->begin(57600);
+		serial->begin(19200);
 		robotControlService = new RobotControlService(NULL, NULL, PSTR("44444444"), rs485);
 	}
 
@@ -84,12 +84,12 @@ public:
 void LineFollower::begin(const char* robotModel) {
 	keepLoop = true;
 	while (keepLoop) {
-		robotControlService->getVersion(this, [](void* self, int version) {
+		robotControlService->getVersion(this, [](int, void* self, int version) {
 			Serial.print("Control service version: "); Serial.println(version);
 			((LineFollower*)self)->keepLoop = false;
 		});
 	}
-	robotControlService->init(robotModel, this, [](void*, bool res) {
+	robotControlService->init(robotModel, this, [](int, void*, bool res) {
 		Serial.print("Init: "); Serial.println(res);
 	});
 }
