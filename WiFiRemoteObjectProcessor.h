@@ -30,6 +30,7 @@ WiFiRemoteObjectProcessor::WiFiRemoteObjectProcessor(int port, const char* secur
 bool WiFiRemoteObjectProcessor::loop() {
 	WiFiClient client = server->available();
 	if (client) {
+		Serial.print("Connection from: "); client.remoteIP().printTo(Serial); Serial.print(":"); Serial.println(client.remotePort());
 		return HttpRemoteObjectProcessor::processClient(&client);
 	}
 	return false;

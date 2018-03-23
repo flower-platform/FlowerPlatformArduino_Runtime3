@@ -28,8 +28,8 @@
 
 extern bool dispatchFunctionCall(char* functionCall, Print* response);
 void registerCallback(uint16_t callbackId, void* self, void* callback, uint8_t returnTypeId);
-bool executeCallback(uint16_t callbackId, Stream *response);
-bool executeCallback(void* self, void* callback, uint8_t returnType, Stream *response);
+bool executeCallback(uint16_t callbackId, int errorCode, Stream *response);
+bool executeCallback(int errorCode, void* self, void* callback, uint8_t returnType, Stream *response);
 
 class RemoteObject {
 public:
@@ -78,6 +78,9 @@ bool RemoteObject::callFunction(const char* functionNamePSTR, SmartBuffer* argsB
 
 	Stream* in = sendRequest(&buf);
 	if (in == NULL) {
+		if (callback != NULL) {
+			executeCallback(1, self, callback, returnTypeId, in);
+		}
 		return false;
 	}
 
@@ -97,7 +100,7 @@ bool RemoteObject::callFunction(const char* functionNamePSTR, SmartBuffer* argsB
 	switch(cmd) {
 	case 'R': // result
 		in->readBytesUntil(TERM, callbackIdStr, 8); // callbackId (ignored)
-		executeCallback(self, callback, returnTypeId, in);
+		executeCallback(0, self, callback, returnTypeId, in);
 		break;
 	case 'P': // pending
 		int size = in->readBytesUntil(TERM, callbackIdStr, 8); // callbackId
@@ -129,7 +132,7 @@ void registerCallback(uint16_t callbackId, void* self, void* callback, uint8_t r
 	}
 }
 
-bool executeCallback(uint16_t callbackId, Stream *response) {
+bool executeCallback(uint16_t callbackId, int errorCode, Stream *response) {
 	uint8_t cbIndex = 0;
 	while (cbIndex < MAX_CALLBACKS && (callbacks[cbIndex].callbackId != callbackId ) ) {
 		cbIndex++;
@@ -140,34 +143,42 @@ bool executeCallback(uint16_t callbackId, Stream *response) {
 	RemoteObjectCallback cb = callbacks[callbackIndex];
 	void* callbackFunction = cb.callbackFunction;
 	cb.callbackFunction = NULL;
-	return executeCallback(cb.selfObject, callbackFunction, cb.returnType, response);
+	return executeCallback(errorCode, cb.selfObject, callbackFunction, cb.returnType, response);
 }
 
-bool executeCallback(void* self, void* callback, uint8_t returnType, Stream *response) {
+bool executeCallback(int errorCode, void* self, void* callback, uint8_t returnType, Stream *response) {
 	int size;
 	switch (returnType) {
 	case TYPE_VOID:
-		((void (*)(void*)) callback)(self);
+		((void (*)(int errorCode, void*)) callback)(errorCode, self);
 		break;
 	case TYPE_INT: {
-		char valueStr[8];
-		int size = response->readBytesUntil(EOT, valueStr, 8);
-		valueStr[size] = TERM;
-		int value = atoi(valueStr);
-		((void (*)(void*, int)) callback)(self, value);
+		int value = 0;
+		if (response != NULL) {
+			char valueStr[8];
+			int size = response->readBytesUntil(EOT, valueStr, 8);
+			valueStr[size] = TERM;
+			value = atoi(valueStr);
+		}
+		((void (*)(int errorCode, void*, int)) callback)(errorCode, self, value);
 	} break;
 	case TYPE_BOOL: {
-		char valueStr[8];
-		size = response->readBytesUntil(EOT, valueStr, 8);
-		valueStr[size] = TERM;
-		int value = atoi(valueStr);
-		((void (*)(void*, bool)) callback)(self, value);
+		int value = 0;
+		if (response != NULL) {
+			char valueStr[8];
+			size = response->readBytesUntil(EOT, valueStr, 8);
+			valueStr[size] = TERM;
+			value = atoi(valueStr);
+		}
+		((void (*)(int errorCode, void*, bool)) callback)(errorCode, self, value);
 	} break;
 	case TYPE_STRING: {
-		char value[65];
-		int size = response->readBytesUntil(EOT, value, 64);
-		value[size] = TERM;
-		((void (*)(void*, const char*)) callback)(self, value);
+		char value[65] = "\0";
+		if (response != NULL) {
+			int size = response->readBytesUntil(EOT, value, 64);
+			value[size] = TERM;
+		}
+		((void (*)(int errorCode, void*, const char*)) callback)(errorCode, self, value);
 	} break;
 	}
 	return true;

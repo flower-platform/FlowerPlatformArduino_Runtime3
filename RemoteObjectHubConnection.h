@@ -115,7 +115,7 @@ bool RemoteObjectHubConnection::processCommand(Stream* in, Print* out) {
 
 		uint16_t callbackId = (uint16_t) atol(callbackIdStr);
 //		Serial.print("Response received; callbackId="); Serial.println(callbackId);
-		executeCallback(callbackId, in);
+		executeCallback(0, callbackId, in);
 		return true; }
 	}
 

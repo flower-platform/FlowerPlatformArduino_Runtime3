@@ -220,4 +220,27 @@ int base64_decode(char* output, char* input, int inputLen) {
 	return decLen;
 }
 
+void debug_println(const char* s1, const char* s2 = NULL) {
+	Serial.print("["); Serial.print(millis()); Serial.print("] ");
+	if (s1) {
+		Serial.print(s1);
+	}
+	if (s2) {
+		Serial.print(s2);
+	}
+	Serial.println();
+}
+
+void debug_println(const char* s1, int n, const char* s2 = NULL) {
+	Serial.print("["); Serial.print(millis()); Serial.print("] ");
+	if (s1) {
+		Serial.print(s1);
+	}
+	Serial.print(n);
+	if (s2) {
+		Serial.print(s2);
+	}
+	Serial.println();
+}
+
 #endif

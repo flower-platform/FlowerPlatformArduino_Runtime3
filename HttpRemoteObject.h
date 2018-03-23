@@ -7,13 +7,14 @@
 #define HTTPREMOTEOBJECT_H_
 
 #include <Arduino.h>
+#include <Client.h>
 #include <FlowerPlatformArduinoRuntime.h>
 #include <HardwareSerial.h>
 #include <RemoteObject.h>
 #include <RemoteObjectProtocol.h>
+#include <stddef.h>
 #include <SmartBuffer.h>
 #include <Stream.h>
-#include <WiFiClient.h>
 
 class HttpRemoteObject : public RemoteObject {
 public:
@@ -25,6 +26,8 @@ public:
 	}
 
 protected:
+
+	unsigned long lastReadTimestamp = 0;
 
 	char remoteAddress[16];
 
@@ -39,10 +42,20 @@ protected:
 };
 
 Stream* HttpRemoteObject::sendRequest(SmartBuffer* buf) {
-	Serial.print(remoteAddress); Serial.println(" connecting...");
-//	WiFiClient client;
-	int connStatus = client->connect(remoteAddress, remotePort);
-	Serial.print(remoteAddress); Serial.print(":"); Serial.print(remotePort); Serial.print(" connect status: "); Serial.println(connStatus);
+	if (!client->connected() || millis() - lastReadTimestamp > 10000) {
+		debug_println("connecting... previouslyConnected=", client->connected());
+
+		client->stop();
+		Serial.print(remoteAddress); Serial.print(":"); Serial.println(remotePort);
+
+		int connStatus = client->connect(remoteAddress, remotePort);
+		debug_println("connect status: ", connStatus);
+
+		if (connStatus == 0) {
+			client->stop();
+			return NULL;
+		}
+	}
 
 	// compute payload size
 	size_t contentLength = buf->available();
@@ -59,9 +72,15 @@ Stream* HttpRemoteObject::sendRequest(SmartBuffer* buf) {
 
 	// send request
 	reqBuf.flush(client);
+//	client->flush();	// DO NOT USE client->flush() on ESP8266; it slows down or breaks communication
+	debug_println("Data flushed");
 
+	debug_println("Reading data...");
 	// skip http headers; exit if headers not found
+	client->setTimeout(5000);
 	if (!client->find((char*) "\r\n\r\n")) {
+		debug_println("Read timeout");
+		client->stop();
 		return NULL;
 	}
 
@@ -70,15 +89,15 @@ Stream* HttpRemoteObject::sendRequest(SmartBuffer* buf) {
 	size_t n = client->readBytesUntil(EOT, buf->getBuffer(), buf->capacity());
 	buf->setSize(n);
 	buf->write(EOT); // include EOT in packet
-	Serial.print("Received "); Serial.print(n); Serial.println(" bytes");
+	debug_println("Received ", n, " bytes");
+	lastReadTimestamp = millis();
 
-	// disconnect
-	delay(10);
-	client->stop();
-	Serial.println("Disconnected");
+	// disconnect if not using keep-alive
+//	delay(10);
+//	client->stop();
+//	debug_println("Disconnected");
 
 	return buf;
 }
-
 
 #endif /* HTTPREMOTEOBJECT_H_ */

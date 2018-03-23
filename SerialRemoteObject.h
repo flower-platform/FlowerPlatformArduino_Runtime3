@@ -27,6 +27,9 @@ protected:
 };
 
 Stream* SerialRemoteObject::sendRequest(SmartBuffer* buf) {
+	// clear input buffer
+	while (rs485->available()) { rs485->read(); }
+
 	// send payload
 	size_t size = buf->available();
 	rs485->setBatchWriteMode(true);
