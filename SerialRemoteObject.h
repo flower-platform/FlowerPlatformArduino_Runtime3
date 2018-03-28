@@ -39,22 +39,15 @@ Stream* SerialRemoteObject::sendRequest(SmartBuffer* buf) {
 	rs485->setBatchWriteMode(false);
 
 	// read response
-//	Serial.println("Reading response");
-	uint8_t c;
-	long t = millis();
 	buf->clear();
-	t = millis();
-
 	size = ((rs485->timedRead() & 0xFF) << 8) | (rs485->timedRead() & 0xFF);
-	do {
-		c = rs485->timedRead();
-		buf->write(c);
-	} while (c != EOT && millis() - t < 1000);
+	size_t n = rs485->readBytesUntil(EOT, buf->getBuffer(), buf->capacity());
+	if (n > 0) {
+		buf->setSize(n);
+		buf->write(EOT);
+	}
 
-
-//	for (int i = 0; i < buf->available(); i++) {
-//		Serial.print((char) (buf->getBuffer()[i]));
-//	}
+//	debug_printBuffer(buf->getBuffer(), buf->available());
 
 	return buf;
 }

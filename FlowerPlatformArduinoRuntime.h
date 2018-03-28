@@ -243,4 +243,16 @@ void debug_println(const char* s1, int n, const char* s2 = NULL) {
 	Serial.println();
 }
 
+void debug_printBuffer(uint8_t* buf, size_t size) {
+	Serial.print("["); Serial.print(millis()); Serial.print("] ");
+	for (size_t i = 0; i < size; i++) {
+		Serial.print((char) (buf[i]));
+	}
+	Serial.print("\t");
+	for (size_t i = 0; i < size; i++) {
+		Serial.print(buf[i]); Serial.print(".");
+	}
+	Serial.println();
+}
+
 #endif
