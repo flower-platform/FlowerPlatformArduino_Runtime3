@@ -27,7 +27,7 @@ public:
 
 void HttpRemoteObjectProcessor::sendPacketHeader(Print* out, char command, const char* securityTokenPSTR, size_t payloadSize) {
 	// send HTTP header
-	write_P(out, PSTR("HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n")); // HTTP headers
+	write_P(out, PSTR("HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\nContent-Type: text/fprp\r\n")); // HTTP headers
 	write_P(out, PSTR("Content-Length: ")); out->println(FPRP_PACKET_OVERHEAD_SIZE + payloadSize);
 	out->println();
 
