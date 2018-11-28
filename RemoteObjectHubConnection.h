@@ -28,6 +28,8 @@ public:
 
 	void loop();
 
+	void pollHub();
+
 	virtual ~RemoteObjectHubConnection() { };
 
 protected:
@@ -48,7 +50,7 @@ protected:
 
 	uint16_t localServerPort = 0;
 
-	virtual Client* connect(const char* remoteAddress, uint16_t remotePort) = 0;
+//	virtual Client* connect(const char* remoteAddress, uint16_t remotePort) = 0;
 
 	void registerToHub(Stream* in, Print* out);
 
@@ -114,8 +116,8 @@ bool RemoteObjectHubConnection::processCommand(Stream* in, Print* out) {
 		callbackIdStr[size] = '\0';
 
 		uint16_t callbackId = (uint16_t) atol(callbackIdStr);
-//		Serial.print("Response received; callbackId="); Serial.println(callbackId);
-		executeCallback(0, callbackId, in);
+		Serial.print("Response received; callbackId="); Serial.println(callbackId);
+		executeCallback(callbackId, 0, in);
 		return true; }
 	}
 
@@ -137,17 +139,16 @@ void RemoteObjectHubConnection::registerToHub(Stream* in, Print* out) {
 	registered = true;
 }
 
-void RemoteObjectHubConnection::loop() {
-		if (millis() - lastPollTime < pollInterval) {
-		return;
-	}
+void RemoteObjectHubConnection::pollHub() {
 	lastPollTime = millis();
 
 	char address[strlen_P(remoteAddressPSTR) + 1];
 	strcpy_P(address, remoteAddressPSTR);
-	Client* client = connect(address, remotePort);
 
-	if (!client) {
+	WiFiClient wifiClient;
+	WiFiClient* client = &wifiClient;
+
+	if (!client->connect(address, remotePort)) {
 		registered = false;
 		return;
 	}
@@ -156,25 +157,37 @@ void RemoteObjectHubConnection::loop() {
 	}
 
 	// get pending invocations
+	debug_println("Get pending invocations..");
 	startHttpRequest(client, "/hub", FPRP_PACKET_OVERHEAD_SIZE);
 	fprp_startPacket(client, 'J', securityTokenPSTR);
 	fprp_endPacket(client);
 	client->flush();
 
+//	debug_println("Processing...");
 	while(processCommand(client, client));
 
 	// get pending responses
+	debug_println("Get pending responses..");
 	startHttpRequest(client, "/hub", FPRP_PACKET_OVERHEAD_SIZE);
 	fprp_startPacket(client, 'S', securityTokenPSTR);
 	fprp_endPacket(client);
 	client->flush();
+//	debug_println("Processing...");
 	while(processCommand(client, client));
 
+	debug_println("Disconnecting");
 	client->stop();
 	lastPollTime = millis();
 }
 
-void RemoteObjectHubConnection::startHttpRequest(Print* out, const char* url, int contentLength = -1) {
+void RemoteObjectHubConnection::loop() {
+	if (pollInterval <= 0 || millis() - lastPollTime < pollInterval) {
+		return;
+	}
+	pollHub();
+}
+
+void RemoteObjectHubConnection::startHttpRequest(Print* out, const char* url, int contentLength) {
 	write_P(out, PSTR("POST ")); out->print(url); write_P(out, PSTR(" HTTP/1.1\r\n"));
 	if (contentLength >= 0) {
 		write_P(out, PSTR("Content-Length: ")); out->println(contentLength);

@@ -26,7 +26,7 @@
 
 #define DEFAULT_BUFFER_SIZE 128
 
-extern bool dispatchFunctionCall(char* functionCall, Print* response);
+__attribute__((weak)) bool dispatchFunctionCall(char* functionCall, Print* response);
 void registerCallback(uint16_t callbackId, void* self, void* callback, uint8_t returnTypeId);
 bool executeCallback(uint16_t callbackId, int errorCode, Stream *response);
 bool executeCallback(int errorCode, void* self, void* callback, uint8_t returnType, Stream *response);
@@ -67,7 +67,7 @@ bool RemoteObject::callFunction(const char* functionNamePSTR, SmartBuffer* argsB
 	}
 	buf.print(TERM); // remoteNodeId
 	buf.print(TERM); // callbackId = null
-	if (objectNamePSTR != NULL) {
+	if (objectNamePSTR != NULL && strlen_P(objectNamePSTR) > 0) {
 		buf.write_P(objectNamePSTR); buf.print('.');
 	}
 	write_P(&buf, functionNamePSTR); buf.print(TERM);
@@ -122,10 +122,11 @@ struct RemoteObjectCallback {
 uint8_t callbackIndex = 0;
 
 void registerCallback(uint16_t callbackId, void* self, void* callback, uint8_t returnTypeId) {
-	callbacks[callbackIndex].callbackId = callbackId;
-	callbacks[callbackIndex].callbackFunction = callback;
-	callbacks[callbackIndex].selfObject = self;
-	callbacks[callbackIndex].returnType = returnTypeId;
+	RemoteObjectCallback* cb = callbacks + callbackIndex;
+	cb->callbackId = callbackId;
+	cb->callbackFunction = callback;
+	cb->selfObject = self;
+	cb->returnType = returnTypeId;
 	callbackIndex++;
 	if (callbackIndex >= MAX_CALLBACKS) {
 		callbackIndex = 0;
@@ -140,10 +141,10 @@ bool executeCallback(uint16_t callbackId, int errorCode, Stream *response) {
 	if (cbIndex == MAX_CALLBACKS) {
 		return false;
 	}
-	RemoteObjectCallback cb = callbacks[callbackIndex];
-	void* callbackFunction = cb.callbackFunction;
-	cb.callbackFunction = NULL;
-	return executeCallback(errorCode, cb.selfObject, callbackFunction, cb.returnType, response);
+	RemoteObjectCallback* cb = callbacks + cbIndex;
+	void* callbackFunction = cb->callbackFunction;
+	cb->callbackFunction = NULL;
+	return executeCallback(errorCode, cb->selfObject, callbackFunction, cb->returnType, response);
 }
 
 bool executeCallback(int errorCode, void* self, void* callback, uint8_t returnType, Stream *response) {
