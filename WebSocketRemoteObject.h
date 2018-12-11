@@ -17,7 +17,6 @@ public:
 
 	WebSocketRemoteObject(const char* nodeIdPSTR, const char* objectNamePSTR, const char* securityTokenPSTR, uint16_t port) : RemoteObject(nodeIdPSTR, objectNamePSTR, securityTokenPSTR) {
 		this->webSocket = new WebSocketsServer(port, "*");
-		this->webSocket->begin();
 	}
 
 	virtual void loop() {
@@ -27,6 +26,8 @@ public:
 	void start();
 
 	void stop();
+
+	~WebSocketRemoteObject();
 
 protected:
 
@@ -56,6 +57,11 @@ void WebSocketRemoteObject::start() {
 
 void WebSocketRemoteObject::stop() {
 	webSocket->close();
+}
+
+WebSocketRemoteObject::~WebSocketRemoteObject() {
+	delete webSocket;
+	webSocket = NULL;
 }
 
 #endif /* WEBSOCKETREMOTEOBJECT_H_ */

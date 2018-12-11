@@ -16,6 +16,13 @@ public:
 
 	bool loop();
 
+	void stop();
+
+	~WiFiRemoteObjectProcessor() {
+		delete server;
+	}
+
+
 protected:
 
 	WiFiServer* server = NULL;
@@ -34,6 +41,10 @@ bool WiFiRemoteObjectProcessor::loop() {
 		return HttpRemoteObjectProcessor::processClient(&client);
 	}
 	return false;
+}
+
+void WiFiRemoteObjectProcessor::stop() {
+	server->stop();
 }
 
 #endif /* ESP8266WIFIREMOTEOBJECTPROCESSOR_H_ */

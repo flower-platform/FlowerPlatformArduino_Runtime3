@@ -14,15 +14,6 @@
 #include <SmartBuffer.h>
 
 
-#ifdef ESP8266
-#define PACKET_BUFFER_SIZE 6210
-#define RESULT_BUFFER_SIZE 2048
-#else
-#define PACKET_BUFFER_SIZE 128
-#define RESULT_BUFFER_SIZE 64
-#endif
-
-
 class RemoteObjectProcessor {
 public:
 
@@ -71,6 +62,7 @@ bool RemoteObjectProcessor::processCommand(Stream* in, Print* out) {
 	// check node id
 	size = in->readBytesUntil(TERM, buf, PACKET_BUFFER_SIZE); buf[size] = '\0'; // node id
 	if (localNodeIdPSTR != NULL && strcmp_P(buf, localNodeIdPSTR) != 0) { // not our packet
+		delete buf;
 		return false;
 	}
 

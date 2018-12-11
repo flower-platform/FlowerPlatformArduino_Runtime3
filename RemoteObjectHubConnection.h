@@ -11,14 +11,6 @@
 #include <RemoteObject.h>
 #include <RemoteObjectProtocol.h>
 
-#ifdef ESP8266
-#define PACKET_BUFFER_SIZE 6210
-#define RESULT_BUFFER_SIZE 2048
-#else
-#define PACKET_BUFFER_SIZE 128
-#define RESULT_BUFFER_SIZE 64
-#endif
-
 class RemoteObjectHubConnection {
 public:
 
@@ -29,6 +21,8 @@ public:
 	void loop();
 
 	void pollHub();
+
+	void stop();
 
 	virtual ~RemoteObjectHubConnection() { };
 
@@ -50,7 +44,7 @@ protected:
 
 	uint16_t localServerPort = 0;
 
-//	virtual Client* connect(const char* remoteAddress, uint16_t remotePort) = 0;
+	char* rbuf = NULL;
 
 	void registerToHub(Stream* in, Print* out);
 
@@ -75,20 +69,19 @@ bool RemoteObjectHubConnection::processCommand(Stream* in, Print* out) {
 		return false;
 	}
 
-	size_t size = 0;
 	int cmd = fprp_readCommand(in, securityTokenPSTR);
 	if (cmd < 0) {
-		Serial.print("Error reading command: "); Serial.println(cmd);
+		debug_println("Error reading command: ", cmd);
 		registered = false;
 		return false;
 	}
 
-	char callbackIdStr[8];
+	size_t size = 0;
 
-	char rbuf[PACKET_BUFFER_SIZE];
+	char callbackIdStr[16];
 
 	switch (cmd) {
-	case 'I': {  // INVOKE
+	case 'I': { // INVOKE
 		in->readBytesUntil('\0', rbuf, PACKET_BUFFER_SIZE); // nodeId (ignored)
 		size = in->readBytesUntil('\0', rbuf, PACKET_BUFFER_SIZE); // callbackId
 		strncpy(callbackIdStr, rbuf, size);
@@ -111,14 +104,14 @@ bool RemoteObjectHubConnection::processCommand(Stream* in, Print* out) {
 //		connection->flush();
 		return true; }
 	case 'R': { // result
+		debug_println("Reading response packet");
 		size = in->readBytesUntil(TERM, rbuf, PACKET_BUFFER_SIZE); // callbackId
 		strncpy(callbackIdStr, rbuf, size);
 		callbackIdStr[size] = '\0';
 
 		uint16_t callbackId = (uint16_t) atol(callbackIdStr);
-		Serial.print("Response received; callbackId="); Serial.println(callbackId);
 		executeCallback(callbackId, 0, in);
-		return true; }
+		break; }
 	}
 
 	return false;
@@ -161,19 +154,25 @@ void RemoteObjectHubConnection::pollHub() {
 	startHttpRequest(client, "/hub", FPRP_PACKET_OVERHEAD_SIZE);
 	fprp_startPacket(client, 'J', securityTokenPSTR);
 	fprp_endPacket(client);
-	client->flush();
+//	client->flush();
 
-//	debug_println("Processing...");
-	while(processCommand(client, client));
+	rbuf = new char[PACKET_BUFFER_SIZE];
+
+	yield();
+	while(processCommand(client, client)) ;
+	yield();
 
 	// get pending responses
 	debug_println("Get pending responses..");
 	startHttpRequest(client, "/hub", FPRP_PACKET_OVERHEAD_SIZE);
 	fprp_startPacket(client, 'S', securityTokenPSTR);
 	fprp_endPacket(client);
-	client->flush();
-//	debug_println("Processing...");
-	while(processCommand(client, client));
+//	client->flush();
+	yield();
+	processCommand(client, client);
+	yield();
+
+	delete rbuf;
 
 	debug_println("Disconnecting");
 	client->stop();
@@ -181,7 +180,7 @@ void RemoteObjectHubConnection::pollHub() {
 }
 
 void RemoteObjectHubConnection::loop() {
-	if (pollInterval <= 0 || millis() - lastPollTime < pollInterval) {
+	if (registered && (pollInterval <= 0 || millis() - lastPollTime < pollInterval)) {
 		return;
 	}
 	pollHub();
@@ -195,6 +194,5 @@ void RemoteObjectHubConnection::startHttpRequest(Print* out, const char* url, in
 	write_P(out, PSTR("Host: ")); write_P(out, remoteAddressPSTR); out->println();
 	out->println();
 }
-
 
 #endif /* REMOTEOBJECTHUBCONNECTION_H_ */

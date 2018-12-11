@@ -11,6 +11,14 @@
 #define strcmp_P(str1, st2P) strcmp(str1, st2P)
 #endif
 
+#ifdef ESP8266
+#define PACKET_BUFFER_SIZE 6210
+#define RESULT_BUFFER_SIZE 2048
+#else
+#define PACKET_BUFFER_SIZE 128
+#define RESULT_BUFFER_SIZE 64
+#endif
+
 #include <FlowerPlatformArduinoRuntime.h>
 #include <HardwareSerial.h>
 #include <RemoteObjectProtocol.h>
@@ -122,7 +130,8 @@ struct RemoteObjectCallback {
 uint8_t callbackIndex = 0;
 
 void registerCallback(uint16_t callbackId, void* self, void* callback, uint8_t returnTypeId) {
-	RemoteObjectCallback* cb = callbacks + callbackIndex;
+	struct RemoteObjectCallback *cb = callbacks;
+	cb += callbackIndex;
 	cb->callbackId = callbackId;
 	cb->callbackFunction = callback;
 	cb->selfObject = self;
@@ -141,7 +150,8 @@ bool executeCallback(uint16_t callbackId, int errorCode, Stream *response) {
 	if (cbIndex == MAX_CALLBACKS) {
 		return false;
 	}
-	RemoteObjectCallback* cb = callbacks + cbIndex;
+	struct RemoteObjectCallback *cb = callbacks;
+	cb += cbIndex;
 	void* callbackFunction = cb->callbackFunction;
 	cb->callbackFunction = NULL;
 	return executeCallback(errorCode, cb->selfObject, callbackFunction, cb->returnType, response);
