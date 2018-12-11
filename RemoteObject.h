@@ -154,6 +154,7 @@ bool executeCallback(uint16_t callbackId, int errorCode, Stream *response) {
 	cb += cbIndex;
 	void* callbackFunction = cb->callbackFunction;
 	cb->callbackFunction = NULL;
+	cb->callbackId = 0;
 	return executeCallback(errorCode, cb->selfObject, callbackFunction, cb->returnType, response);
 }
 
