@@ -21,11 +21,14 @@ bool _update_write(uint8_t* chunk, int chunkSize) {
 	Update.write(chunk, chunkSize);
 	if (Update.isFinished() && Update.end()) {
 		Update.printError(Serial);
-		ESP.restart();
 	} else {
 		Update.printError(Serial);
 	}
 	return !Update.hasError();
+}
+
+void _update_restart() {
+	ESP.restart();
 }
 
 bool _esp8266_remote_object_update_dispatchFunctionCall(char* functionCall, Print* response) {
@@ -42,6 +45,8 @@ bool _esp8266_remote_object_update_dispatchFunctionCall(char* functionCall, Prin
 		base64_decode(data, data, functionCall - data -1);
 		int chunkSize = atoi(functionCall); functionCall += strlen(functionCall) + 1;
 		response->print(_update_write((uint8_t*) data, chunkSize));
+	} else if (strcmp_P(functionCall, PSTR("_update_restart")) == 0) {
+		_update_restart();
 	} else {
 		return false;
 	}
